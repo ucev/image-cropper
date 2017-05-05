@@ -1,0 +1,47 @@
+@charset "utf-8";
+.cropper-container {
+  position: relative;
+  background-color: rgba(189, 189, 189, 0.5)
+}
+
+.cropper-img-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.cropper-toolbar {
+  display: inline-block;
+  position: absolute;
+  z-index: 10;
+  bottom: 0;
+  height: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: rgb(3, 6, 8);
+}
+
+.cropper-toolbar a {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  color: white;
+}
+
+.cropper-handler {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: rgba(79, 195, 247, 0.8);
+}
+
+.cropper-cover {
+  box-sizing: border-box;
+  position: absolute;
+  background-color: rgba(189, 189, 189, 0.5);
+}
+
+.cropper-cover-center-center {
+  background: none;
+  border: 2px solid rgb(3, 169, 244);
+}
