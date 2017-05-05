@@ -5,7 +5,7 @@ image cropper for javascript
 
 ### Quick Start
 ```
-npm install --save image-cropper
+npm install --save imagecropper
 ```
 
 ### Installation
