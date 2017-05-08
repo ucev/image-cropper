@@ -35,40 +35,6 @@
   background-color: rgba(79, 195, 247, 0.8);
 }
 
-
-/*
-.cropper-handler-top-left {
-  cursor: nwse-resize;
-}
-
-.cropper-handler-top-center {
-  cursor: ns-resize;
-}
-
-.cropper-handler-top-right {
-  cursor: nesw-resize;
-}
-
-.cropper-handler-right-center {
-  cursor: ew-resize;
-}
-
-.cropper-handler-bottom-right {
-  cursor: nwse-resize;
-}
-
-.cropper-handler-bottom-center {
-  cursor: ns-resize;
-}
-
-.cropper-handler-bottom-left {
-  cursor: nesw-resize;
-}
-
-.cropper-handler-left-center {
-  cursor: ew-resize;
-}*/
-
 .cropper-cover {
   box-sizing: border-box;
   position: absolute;

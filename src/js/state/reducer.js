@@ -40,7 +40,6 @@ function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio) {
   subX = Math.abs(subX);
   subY = Math.abs(subY);
   if (subX / ratio <= subY) {
-    console.log("Y");
     subY = subX / ratio;
     if (ordY == -1) {
       cords.cropperStartY = cords.cropperEndY - subY * positiveY;
@@ -49,15 +48,12 @@ function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio) {
     }
   } else {
     subX = subY * ratio;
-    console.log("X");
     if (ordX == -1) {
       cords.cropperStartX = cords.cropperEndX - subX * positiveX;
     } else if (ordX == 1) {
       cords.cropperEndX = cords.cropperStartX + subX * positiveX;
     }
   }
-  console.log(subX / subY);
-  console.log(Math.abs((cords.cropperStartX - cords.cropperEndX) / (cords.cropperStartY - cords.cropperEndY)));
   return cords;
 }
 

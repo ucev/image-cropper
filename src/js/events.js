@@ -4,8 +4,6 @@
 
 exports.keyEvents = function (actions) {
   return function (e) {
-    console.log("key event");
-    console.log(e);
     switch (e.keyCode) {
       case 27: // ESC
         actions.clearCropper();
@@ -22,7 +20,6 @@ exports.mouseEvents = function (actions) {
    * 仅仅是鼠标点击事件
    */
   return function mouseEvents(e) {
-    console.log("click");
     var pageXOffset = window.pageXOffset,
       pageYOffset = window.pageYOffset;
     var x = e.clientX + pageXOffset,

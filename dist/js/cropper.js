@@ -1142,8 +1142,6 @@ module.exports = defaults;
 
 exports.keyEvents = function (actions) {
   return function (e) {
-    console.log("key event");
-    console.log(e);
     switch (e.keyCode) {
       case 27:
         // ESC
@@ -1161,7 +1159,6 @@ exports.mouseEvents = function (actions) {
    * 仅仅是鼠标点击事件
    */
   return function mouseEvents(e) {
-    console.log("click");
     var pageXOffset = window.pageXOffset,
         pageYOffset = window.pageYOffset;
     var x = e.clientX + pageXOffset,
@@ -1186,8 +1183,6 @@ exports.mouseEvents = function (actions) {
 },{}],24:[function(require,module,exports){
 'use strict';
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Actions = require('./state/action');
@@ -1198,123 +1193,28 @@ var _events = require('./events');
 var _keyEvents = _events.keyEvents;
 var _mouseEvents = _events.mouseEvents;
 
-var ImageCropper = function () {
-  function ImageCropper(options) {
-    var _this = this;
+var ImageCropper = function ImageCropper(options) {
+  var _this = this;
 
-    _classCallCheck(this, ImageCropper);
+  _classCallCheck(this, ImageCropper);
 
-    this.actions = new Actions();
-    this.actions.setOptions(options);
-    this.actions.subscribe(function () {
-      _this.draw(_this.actions.getState());
-    });
-    this.initCropper(this.actions.getState().options);
-    var keyEvents = _keyEvents(this.actions);
-    var mouseEvents = _mouseEvents(this.actions);
-    window.document.addEventListener("keydown", keyEvents);
-    //this.rootElement.addEventListener("keydown", keyEvents);
-    this.rootElement.addEventListener("mousedown", mouseEvents);
-    this.rootElement.addEventListener("mousemove", mouseEvents);
-    this.rootElement.addEventListener("mouseup", mouseEvents);
-  }
-
-  _createClass(ImageCropper, [{
-    key: 'clearCropper',
-    value: function clearCropper() {
-      return _viewRender.clearCropper.call(this);
-    }
-  }, {
-    key: 'createIcon',
-    value: function createIcon() {
-      return _viewRender.createIcon.call(this);
-    }
-  }, {
-    key: 'draw',
-    value: function draw() {
-      return _viewRender.draw.apply(this, arguments);
-    }
-  }, {
-    key: 'drawCovers',
-    value: function drawCovers() {
-      return _viewRender.drawCovers.apply(this, arguments);
-    }
-  }, {
-    key: 'drawCropper',
-    value: function drawCropper() {
-      return _viewRender.drawCropper.apply(this, arguments);
-    }
-  }, {
-    key: 'drawHandlers',
-    value: function drawHandlers() {
-      return _viewRender.drawHandlers.apply(this, arguments);
-    }
-  }, {
-    key: 'drawPreview',
-    value: function drawPreview() {
-      return _viewRender.drawPreview.apply(this, arguments);
-    }
-  }, {
-    key: 'getElementOffset',
-    value: function getElementOffset() {
-      return _viewRender.getElementOffset.apply(this, arguments);
-    }
-  }, {
-    key: 'getImage',
-    value: function getImage() {
-      return _viewRender.getImage.apply(this, arguments);
-    }
-  }, {
-    key: 'getSelectedRect',
-    value: function getSelectedRect() {
-      return _viewRender.getSelectedRect.apply(this, arguments);
-    }
-  }, {
-    key: 'initCropper',
-    value: function initCropper() {
-      return _viewRender.initCropper.apply(this, arguments);
-    }
-  }, {
-    key: 'initCropperStyle',
-    value: function initCropperStyle() {
-      return _viewRender.initCropperStyle.apply(this, arguments);
-    }
-  }, {
-    key: 'photoZoom',
-    value: function photoZoom() {
-      return _viewRender.photoZoom.apply(this, arguments);
-    }
-  }, {
-    key: 'photoZoomIn',
-    value: function photoZoomIn() {
-      return _viewRender.photoZoomIn.call(this);
-    }
-  }, {
-    key: 'photoZoomOut',
-    value: function photoZoomOut() {
-      return _viewRender.photoZoomOut.call(this);
-    }
-  }, {
-    key: 'setModeCrop',
-    value: function setModeCrop() {
-      return _viewRender.setModeCrop.apply(this, arguments);
-    }
-  }, {
-    key: 'setModeMove',
-    value: function setModeMove() {
-      return _viewRender.setModeMove.apply(this, arguments);
-    }
-  }, {
-    key: 'toggleMode',
-    value: function toggleMode() {
-      return _viewRender.toggleMode.apply(this, arguments);
-    }
-  }]);
-
-  return ImageCropper;
-}();
+  this.actions = new Actions();
+  this.actions.setOptions(options);
+  this.actions.subscribe(function () {
+    _this.draw();
+  });
+  this.initCropper(this.actions.getState().options);
+  var keyEvents = _keyEvents(this.actions);
+  var mouseEvents = _mouseEvents(this.actions);
+  window.document.addEventListener("keydown", keyEvents);
+  this.rootElement.addEventListener("mousedown", mouseEvents);
+  this.rootElement.addEventListener("mousemove", mouseEvents);
+  this.rootElement.addEventListener("mouseup", mouseEvents);
+};
 
 ;
+
+Object.assign(ImageCropper.prototype, _viewRender);
 
 module.exports = ImageCropper;
 
@@ -1323,18 +1223,24 @@ module.exports = ImageCropper;
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var actions = undefined;
-
-var rootElement = undefined,
-    containerElement = undefined,
-    toolbarElement = undefined,
-    containerElementStyle = undefined,
-    sourceImage = undefined,
-    previewCanvas = undefined,
-    previewContext = undefined;
-var srcImageWidth, srcImageHeight, previewCanvasWidth, previewCanvasHeight;
-var handlerTopLeft, handlerTopCenter, handlerTopRight, handlerRightCenter, handlerBottomRight, handlerBottomCenter, handlerBottomLeft, handlerLeftCenter;
-var coverTopLeft, coverTopCenter, coverTopRight, coverRightCenter, coverBottomRight, coverBottomCenter, coverBottomLeft, coverLeftCenter, coverCenterCenter;
+/**
+ * 
+ * var actions = undefined;
+ * var rootElement = undefined,
+ *   containerElement = undefined,
+ *   toolbarElement = undefined,
+ *   containerElementStyle = undefined,
+ *   sourceImage = undefined,
+ *   previewCanvas = undefined,
+ *   previewContext = undefined;
+ * var srcImageWidth, srcImageHeight,
+ *   previewCanvasWidth, previewCanvasHeight;
+ * var handlerTopLeft, handlerTopCenter, handlerTopRight, handlerRightCenter,
+ *   handlerBottomRight, handlerBottomCenter, handlerBottomLeft, handlerLeftCenter;
+ *   var coverTopLeft, coverTopCenter, coverTopRight, coverRightCenter,
+ *   coverBottomRight, coverBottomCenter, coverBottomLeft, coverLeftCenter, coverCenterCenter; 
+ * 
+ */
 
 var toolbarButtons = {
   movePhoto: {
@@ -1359,6 +1265,62 @@ var toolbarButtons = {
   }
 };
 
+function clearCropper() {
+  var handlers = this.containerElement.getElementsByClassName("cropper-handler");
+  handlers = Array.from(handlers);
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = handlers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var h = _step.value;
+
+      h.style.display = "none";
+    }
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
+    } finally {
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
+    }
+  }
+
+  var covers = this.containerElement.getElementsByClassName("cropper-cover");
+  covers = Array.from(covers);
+  var _iteratorNormalCompletion2 = true;
+  var _didIteratorError2 = false;
+  var _iteratorError2 = undefined;
+
+  try {
+    for (var _iterator2 = covers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+      var c = _step2.value;
+
+      c.style.display = "none";
+    }
+  } catch (err) {
+    _didIteratorError2 = true;
+    _iteratorError2 = err;
+  } finally {
+    try {
+      if (!_iteratorNormalCompletion2 && _iterator2.return) {
+        _iterator2.return();
+      }
+    } finally {
+      if (_didIteratorError2) {
+        throw _iteratorError2;
+      }
+    }
+  }
+}
+
 function createIcon(options) {
   var ele = document.createElement("a");
   ele.className = options.className;
@@ -1381,215 +1343,32 @@ function createIcon(options) {
   return ele;
 }
 
-function getElementOffset(ele) {
-  var offsetLeft = 0,
-      offsetTop = 0;
-  while (ele) {
-    offsetLeft += ele.offsetLeft;
-    offsetTop += ele.offsetTop;
-    ele = ele.offsetParent;
+function draw() {
+  var state = this.actions.getState();
+  this.containerElement.style.cursor = state.rootCursor;
+  if (state.dragTarget == "image") {
+    var img = this.containerElement.firstChild;
+    img.style.top = state.topOffset + "px";
+    img.style.left = state.leftOffset + "px";
   }
-  return { left: offsetLeft, top: offsetTop };
-}
-
-function toggleMode(mode) {
-  var extras = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
-  this.actions.toggleMode(mode, extras);
-}
-
-function setModeCrop() {
-  this.toggleMode("crop");
-}
-
-function setModeMove() {
-  var img = this.containerElement.firstChild;
-  var s = getComputedStyle(img);
-  var top = parseInt(s.top);
-  var left = parseInt(s.left);
-  this.toggleMode("move", { top: top, left: left });
-}
-
-function photoZoom(percent) {
-  var ele = this.containerElement.firstChild;
-  var cs = getComputedStyle(this.containerElement);
-  var cw = parseInt(cs.width);
-  var ch = parseInt(cs.height);
-  var es = getComputedStyle(ele);
-  var ew = parseInt(es.width);
-  var eh = parseInt(es.height);
-  var ept = parseInt(es.top);
-  var epl = parseInt(es.left);
-  var cx = -epl + cw / 2;
-  var cy = -ept + ch / 2;
-  var newW = ew + cw * percent;
-  var newH = eh + ch * percent;
-  if (newW <= 20 || newH <= 20) {
-    return;
+  if (state.options.preview) {
+    this.drawPreview(state);
   }
-  var newL = newW * (cx / ew) - cw / 2;
-  var newT = newH * (cy / eh) - ch / 2;
-  ele.style.width = newW + "px";
-  ele.style.height = newH + "px";
-  ele.style.left = -newL + "px";
-  ele.style.top = -newT + "px";
-}
-
-function photoZoomOut() {
-  this.photoZoom(0.1);
-}
-
-function photoZoomIn() {
-  this.photoZoom(-0.1);
-}
-
-function getSelectedRect(state) {
-  state = state || this.actions.getState();
-  var s = getComputedStyle(this.containerElement.firstChild);
-  var offset = getElementOffset(this.containerElement);
-  var tWidth = parseInt(s.width);
-  var tHeight = parseInt(s.height);
-  var tTop = parseInt(s.top);
-  var tLeft = parseInt(s.left);
-  var sX = Math.min(state.cropperStartX, state.cropperEndX) - offset.left,
-      sY = Math.min(state.cropperStartY, state.cropperEndY) - offset.top,
-      eX = Math.max(state.cropperStartX, state.cropperEndX) - offset.left,
-      eY = Math.max(state.cropperStartY, state.cropperEndY) - offset.top;
-  var ratioX = this.srcImageWidth / tWidth,
-      ratioY = this.srcImageHeight / tHeight;
-  var srcX = (-tLeft + sX) * ratioX,
-      srcY = (-tTop + sY) * ratioY,
-      srcWidth = (eX - sX) * ratioX,
-      srcHeight = (eY - sY) * ratioY;
-  return { x: srcX, y: srcY, width: srcWidth, height: srcHeight };
-}
-
-function getImage() {
-  var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "image/png";
-
-  var _getSelectedRect = this.getSelectedRect(),
-      srcX = _getSelectedRect.x,
-      srcY = _getSelectedRect.y,
-      srcWidth = _getSelectedRect.width,
-      srcHeight = _getSelectedRect.height;
-
-  if (srcWidth <= 10 || srcHeight <= 10) return;
-  var canvas = document.createElement("canvas");
-  canvas.setAttribute("width", srcWidth);
-  canvas.setAttribute("height", srcHeight);
-  var ctx = canvas.getContext("2d");
-  ctx.drawImage(sourceImage, srcX, srcY, srcWidth, srcHeight, 0, 0, srcWidth, srcHeight);
-  return canvas.toDataURL(type);
-}
-
-function drawPreview(state) {
-  if (!this.previewContext) return;
-
-  var _getSelectedRect2 = this.getSelectedRect(state),
-      srcX = _getSelectedRect2.x,
-      srcY = _getSelectedRect2.y,
-      srcWidth = _getSelectedRect2.width,
-      srcHeight = _getSelectedRect2.height;
-
-  if (srcWidth <= 10 || srcHeight <= 10) return;
-  // 
-  var dx, dy, dWidth, dHeight;
-  // 横向画满
-  if (this.previewCanvasWidth / srcWidth * srcHeight <= this.previewCanvasHeight) {
-    dWidth = this.previewCanvasWidth;
-    dHeight = this.previewCanvasWidth / srcWidth * srcHeight;
-    dx = 0;
-    dy = (this.previewCanvasHeight - dHeight) / 2;
-  } else {
-    dWidth = this.previewCanvasHeight / srcHeight * srcWidth;
-    dHeight = this.previewCanvasHeight;
-    dx = (this.previewCanvasWidth - dWidth) / 2;
-    dy = 0;
+  switch (state.pointerMode) {
+    case "crop":
+    case "move":
+      var sX = state.cropperStartX,
+          sY = state.cropperStartY,
+          eX = state.cropperEndX,
+          eY = state.cropperEndY;
+      if (sX == -1 || sY == -1 || eX == -1 || eY == -1) {
+        return;
+      }
+      return this.drawCropper(sX, sY, eX, eY);
+    default:
+      return this.clearCropper();
   }
-  this.previewContext.clearRect(0, 0, this.previewCanvasWidth, this.previewCanvasHeight);
-  this.previewContext.drawImage(this.sourceImage, srcX, srcY, srcWidth, srcHeight, dx, dy, dWidth, dHeight);
-}
-
-function getComputedStyle(ele) {
-  return ele.ownerDocument.defaultView.getComputedStyle(ele);
-}
-
-function setCropperCoverStyle(cover, top, left, width, height) {
-  cover.style.top = top + "px";
-  cover.style.left = left + "px";
-  cover.style.width = width + "px";
-  cover.style.height = height + "px";
-  cover.style.display = "block";
-}
-
-function setCropperHandlerStyle(handler, top, left) {
-  handler.style.top = top + "px";
-  handler.style.left = left + "px";
-  handler.style.display = "block";
-}
-
-function setCropperBorderStyle(border, top, left, width, height) {
-  border.style.top = top + "px";
-  border.style.left = left + "px";
-  if (width) {
-    border.style.width = width + "px";
-  }
-  if (height) {
-    border.style.height = height + "px";
-  }
-  border.style.display = "block";
-}
-
-function drawHandlers(startX, startY, endX, endY) {
-  if (!this.handlerTopLeft) {
-    this.handlerTopLeft = document.createElement("span");
-    this.handlerTopLeft.className = "cropper-handler cropper-handler-top-left";
-    this.containerElement.appendChild(this.handlerTopLeft);
-  }
-  if (!this.handlerTopCenter) {
-    this.handlerTopCenter = document.createElement("span");
-    this.handlerTopCenter.className = "cropper-handler cropper-handler-top-center";
-    this.containerElement.appendChild(this.handlerTopCenter);
-  }
-  if (!this.handlerTopRight) {
-    this.handlerTopRight = document.createElement("span");
-    this.handlerTopRight.className = "cropper-handler cropper-handler-top-right";
-    this.containerElement.appendChild(this.handlerTopRight);
-  }
-  if (!this.handlerRightCenter) {
-    this.handlerRightCenter = document.createElement("span");
-    this.handlerRightCenter.className = "cropper-handler cropper-handler-right-center";
-    this.containerElement.appendChild(this.handlerRightCenter);
-  }
-  if (!this.handlerBottomRight) {
-    this.handlerBottomRight = document.createElement("span");
-    this.handlerBottomRight.className = "cropper-handler cropper-handler-bottom-right";
-    this.containerElement.appendChild(this.handlerBottomRight);
-  }
-  if (!this.handlerBottomCenter) {
-    this.handlerBottomCenter = document.createElement("span");
-    this.handlerBottomCenter.className = "cropper-handler cropper-handler-bottom-center";
-    this.containerElement.appendChild(this.handlerBottomCenter);
-  }
-  if (!this.handlerBottomLeft) {
-    this.handlerBottomLeft = document.createElement("span");
-    this.handlerBottomLeft.className = "cropper-handler cropper-handler-bottom-left";
-    this.containerElement.appendChild(this.handlerBottomLeft);
-  }
-  if (!this.handlerLeftCenter) {
-    this.handlerLeftCenter = document.createElement("span");
-    this.handlerLeftCenter.className = "cropper-handler cropper-handler-left-center";
-    this.containerElement.appendChild(this.handlerLeftCenter);
-  }
-  setCropperHandlerStyle(this.handlerTopLeft, startY - 2, startX - 2);
-  setCropperHandlerStyle(this.handlerTopCenter, startY - 2, (startX + endX) / 2);
-  setCropperHandlerStyle(this.handlerTopRight, startY - 2, endX - 4);
-  setCropperHandlerStyle(this.handlerRightCenter, (startY + endY) / 2, endX - 4);
-  setCropperHandlerStyle(this.handlerBottomRight, endY - 4, endX - 4);
-  setCropperHandlerStyle(this.handlerBottomCenter, endY - 4, (startX + endX) / 2);
-  setCropperHandlerStyle(this.handlerBottomLeft, endY - 4, startX - 2);
-  setCropperHandlerStyle(this.handlerLeftCenter, (startY + endY) / 2, startX - 2);
-}
+};
 
 function drawCovers(startX, startY, endX, endY) {
   if (!this.coverTopLeft) {
@@ -1651,47 +1430,159 @@ function drawCovers(startX, startY, endX, endY) {
   setCropperCoverStyle(this.coverCenterCenter, startY, startX, endX - startX, endY - startY);
 }
 
-function initCropperStyle(src) {
-  var target = document.createElement("div");
-  var container = document.createElement("div");
-  var styles = ['width', 'height', 'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'marginLeft', 'marginTop', 'marginRight', 'marginBottom'];
-  var computedStyle = getComputedStyle(src);
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+function drawCropper(x1, y1, x2, y2) {
+  var startX = Math.min(x1, x2);
+  var startY = Math.min(y1, y2);
+  var endX = Math.max(x1, x2);
+  var endY = Math.max(y1, y2);
+  if (endY - startY < 10 && endX - startX < 10) return;
+  var offset = getElementOffset(this.containerElement);
+  startX -= offset.left;
+  startY -= offset.top;
+  endX -= offset.left;
+  endY -= offset.top;
+  this.drawCovers(startX, startY, endX, endY);
+  this.drawHandlers(startX, startY, endX, endY);
+}
 
-  try {
-    for (var _iterator = styles[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var k = _step.value;
-
-      target.style[k] = computedStyle[k];
-      container.style[k] = computedStyle[k];
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator.return) {
-        _iterator.return();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
-    }
+function drawHandlers(startX, startY, endX, endY) {
+  if (!this.handlerTopLeft) {
+    this.handlerTopLeft = document.createElement("span");
+    this.handlerTopLeft.className = "cropper-handler cropper-handler-top-left";
+    this.containerElement.appendChild(this.handlerTopLeft);
   }
+  if (!this.handlerTopCenter) {
+    this.handlerTopCenter = document.createElement("span");
+    this.handlerTopCenter.className = "cropper-handler cropper-handler-top-center";
+    this.containerElement.appendChild(this.handlerTopCenter);
+  }
+  if (!this.handlerTopRight) {
+    this.handlerTopRight = document.createElement("span");
+    this.handlerTopRight.className = "cropper-handler cropper-handler-top-right";
+    this.containerElement.appendChild(this.handlerTopRight);
+  }
+  if (!this.handlerRightCenter) {
+    this.handlerRightCenter = document.createElement("span");
+    this.handlerRightCenter.className = "cropper-handler cropper-handler-right-center";
+    this.containerElement.appendChild(this.handlerRightCenter);
+  }
+  if (!this.handlerBottomRight) {
+    this.handlerBottomRight = document.createElement("span");
+    this.handlerBottomRight.className = "cropper-handler cropper-handler-bottom-right";
+    this.containerElement.appendChild(this.handlerBottomRight);
+  }
+  if (!this.handlerBottomCenter) {
+    this.handlerBottomCenter = document.createElement("span");
+    this.handlerBottomCenter.className = "cropper-handler cropper-handler-bottom-center";
+    this.containerElement.appendChild(this.handlerBottomCenter);
+  }
+  if (!this.handlerBottomLeft) {
+    this.handlerBottomLeft = document.createElement("span");
+    this.handlerBottomLeft.className = "cropper-handler cropper-handler-bottom-left";
+    this.containerElement.appendChild(this.handlerBottomLeft);
+  }
+  if (!this.handlerLeftCenter) {
+    this.handlerLeftCenter = document.createElement("span");
+    this.handlerLeftCenter.className = "cropper-handler cropper-handler-left-center";
+    this.containerElement.appendChild(this.handlerLeftCenter);
+  }
+  setCropperHandlerStyle(this.handlerTopLeft, startY - 2, startX - 2);
+  setCropperHandlerStyle(this.handlerTopCenter, startY - 2, (startX + endX) / 2);
+  setCropperHandlerStyle(this.handlerTopRight, startY - 2, endX - 4);
+  setCropperHandlerStyle(this.handlerRightCenter, (startY + endY) / 2, endX - 4);
+  setCropperHandlerStyle(this.handlerBottomRight, endY - 4, endX - 4);
+  setCropperHandlerStyle(this.handlerBottomCenter, endY - 4, (startX + endX) / 2);
+  setCropperHandlerStyle(this.handlerBottomLeft, endY - 4, startX - 2);
+  setCropperHandlerStyle(this.handlerLeftCenter, (startY + endY) / 2, startX - 2);
+}
 
-  target.className = "cropper-container";
-  container.className = "cropper-img-container";
-  return [target, container];
+function drawPreview(state) {
+  if (!this.previewContext) return;
+
+  var _getSelectedRect = this.getSelectedRect(state),
+      srcX = _getSelectedRect.x,
+      srcY = _getSelectedRect.y,
+      srcWidth = _getSelectedRect.width,
+      srcHeight = _getSelectedRect.height;
+
+  if (srcWidth <= 10 || srcHeight <= 10) return;
+  // 
+  var dx, dy, dWidth, dHeight;
+  // 横向画满
+  if (this.previewCanvasWidth / srcWidth * srcHeight <= this.previewCanvasHeight) {
+    dWidth = this.previewCanvasWidth;
+    dHeight = this.previewCanvasWidth / srcWidth * srcHeight;
+    dx = 0;
+    dy = (this.previewCanvasHeight - dHeight) / 2;
+  } else {
+    dWidth = this.previewCanvasHeight / srcHeight * srcWidth;
+    dHeight = this.previewCanvasHeight;
+    dx = (this.previewCanvasWidth - dWidth) / 2;
+    dy = 0;
+  }
+  this.previewContext.clearRect(0, 0, this.previewCanvasWidth, this.previewCanvasHeight);
+  this.previewContext.drawImage(this.sourceImage, srcX, srcY, srcWidth, srcHeight, dx, dy, dWidth, dHeight);
+}
+
+function getComputedStyle(ele) {
+  return ele.ownerDocument.defaultView.getComputedStyle(ele);
+}
+
+function getElementOffset(ele) {
+  var offsetLeft = 0,
+      offsetTop = 0;
+  while (ele) {
+    offsetLeft += ele.offsetLeft;
+    offsetTop += ele.offsetTop;
+    ele = ele.offsetParent;
+  }
+  return { left: offsetLeft, top: offsetTop };
+}
+
+function getImage() {
+  var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "image/png";
+
+  var _getSelectedRect2 = this.getSelectedRect(),
+      srcX = _getSelectedRect2.x,
+      srcY = _getSelectedRect2.y,
+      srcWidth = _getSelectedRect2.width,
+      srcHeight = _getSelectedRect2.height;
+
+  if (srcWidth <= 10 || srcHeight <= 10) return;
+  var canvas = document.createElement("canvas");
+  canvas.setAttribute("width", srcWidth);
+  canvas.setAttribute("height", srcHeight);
+  var ctx = canvas.getContext("2d");
+  ctx.drawImage(sourceImage, srcX, srcY, srcWidth, srcHeight, 0, 0, srcWidth, srcHeight);
+  return canvas.toDataURL(type);
+}
+
+function getSelectedRect(state) {
+  state = state || this.actions.getState();
+  var s = getComputedStyle(this.containerElement.firstChild);
+  var offset = getElementOffset(this.containerElement);
+  var tWidth = parseInt(s.width);
+  var tHeight = parseInt(s.height);
+  var tTop = parseInt(s.top);
+  var tLeft = parseInt(s.left);
+  var sX = Math.min(state.cropperStartX, state.cropperEndX) - offset.left,
+      sY = Math.min(state.cropperStartY, state.cropperEndY) - offset.top,
+      eX = Math.max(state.cropperStartX, state.cropperEndX) - offset.left,
+      eY = Math.max(state.cropperStartY, state.cropperEndY) - offset.top;
+  var ratioX = this.srcImageWidth / tWidth,
+      ratioY = this.srcImageHeight / tHeight;
+  var srcX = (-tLeft + sX) * ratioX,
+      srcY = (-tTop + sY) * ratioY,
+      srcWidth = (eX - sX) * ratioX,
+      srcHeight = (eY - sY) * ratioY;
+  return { x: srcX, y: srcY, width: srcWidth, height: srcHeight };
 }
 
 function initCropper(options) {
+  injectFontAwesome();
   var ele = options.element;
   if (!ele) {
     throw new Error("没有指定目标节点");
-    return;
   }
 
   var _initCropperStyle = this.initCropperStyle(ele);
@@ -1746,60 +1637,21 @@ function initCropper(options) {
   return this.containerElement;
 }
 
-function drawCropper(x1, y1, x2, y2) {
-  var startX = Math.min(x1, x2);
-  var startY = Math.min(y1, y2);
-  var endX = Math.max(x1, x2);
-  var endY = Math.max(y1, y2);
-  if (endY - startY < 10 && endX - startX < 10) return;
-  var offset = getElementOffset(this.containerElement);
-  startX -= offset.left;
-  startY -= offset.top;
-  endX -= offset.left;
-  endY -= offset.top;
-  this.drawCovers(startX, startY, endX, endY);
-  this.drawHandlers(startX, startY, endX, endY);
-}
-
-function clearCropper() {
-  var handlers = this.containerElement.getElementsByClassName("cropper-handler");
-  handlers = Array.from(handlers);
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
-
-  try {
-    for (var _iterator2 = handlers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var h = _step2.value;
-
-      h.style.display = "none";
-    }
-  } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion2 && _iterator2.return) {
-        _iterator2.return();
-      }
-    } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
-      }
-    }
-  }
-
-  var covers = this.containerElement.getElementsByClassName("cropper-cover");
-  covers = Array.from(covers);
+function initCropperStyle(src) {
+  var target = document.createElement("div");
+  var container = document.createElement("div");
+  var styles = ['width', 'height', 'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'marginLeft', 'marginTop', 'marginRight', 'marginBottom'];
+  var computedStyle = getComputedStyle(src);
   var _iteratorNormalCompletion3 = true;
   var _didIteratorError3 = false;
   var _iteratorError3 = undefined;
 
   try {
-    for (var _iterator3 = covers[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-      var c = _step3.value;
+    for (var _iterator3 = styles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+      var k = _step3.value;
 
-      c.style.display = "none";
+      target.style[k] = computedStyle[k];
+      container.style[k] = computedStyle[k];
     }
   } catch (err) {
     _didIteratorError3 = true;
@@ -1815,36 +1667,112 @@ function clearCropper() {
       }
     }
   }
+
+  target.className = "cropper-container";
+  container.className = "cropper-img-container";
+  return [target, container];
 }
 
-exports.draw = function (state) {
-  this.containerElement.style.cursor = state.rootCursor;
-  if (state.dragTarget == "image") {
-    var img = this.containerElement.firstChild;
-    img.style.top = state.topOffset + "px";
-    img.style.left = state.leftOffset + "px";
+function injectFontAwesome() {
+  var inject = true;
+  var styleSheets = window.document.styleSheets;
+  for (var i = 0; i < styleSheets.length; i++) {
+    if (!styleSheets[i].href) {
+      continue;
+    }
+    if (styleSheets[i].href.indexOf("font-awesome") > -1) {
+      inject = false;
+      break;
+    }
   }
-  if (state.options.preview) {
-    this.drawPreview(state);
+  if (inject) {
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css";
+    document.getElementsByTagName("head")[0].appendChild(link);
   }
-  switch (state.pointerMode) {
-    case "crop":
-    case "move":
-      var sX = state.cropperStartX,
-          sY = state.cropperStartY,
-          eX = state.cropperEndX,
-          eY = state.cropperEndY;
-      if (sX == -1 || sY == -1 || eX == -1 || eY == -1) {
-        return;
-      }
-      return this.drawCropper(sX, sY, eX, eY);
-    default:
-      return this.clearCropper();
-  } /**/
-};
+}
+
+function photoZoom(percent) {
+  var ele = this.containerElement.firstChild;
+  var cs = getComputedStyle(this.containerElement);
+  var cw = parseInt(cs.width);
+  var ch = parseInt(cs.height);
+  var es = getComputedStyle(ele);
+  var ew = parseInt(es.width);
+  var eh = parseInt(es.height);
+  var ept = parseInt(es.top);
+  var epl = parseInt(es.left);
+  var cx = -epl + cw / 2;
+  var cy = -ept + ch / 2;
+  var newW = ew + cw * percent;
+  var newH = eh + ch * percent;
+  if (newW <= 20 || newH <= 20) {
+    return;
+  }
+  var newL = newW * (cx / ew) - cw / 2;
+  var newT = newH * (cy / eh) - ch / 2;
+  ele.style.width = newW + "px";
+  ele.style.height = newH + "px";
+  ele.style.left = -newL + "px";
+  ele.style.top = -newT + "px";
+}
+
+function photoZoomOut() {
+  this.photoZoom(0.1);
+}
+
+function photoZoomIn() {
+  this.photoZoom(-0.1);
+}
+
+function setCropperBorderStyle(border, top, left, width, height) {
+  border.style.top = top + "px";
+  border.style.left = left + "px";
+  if (width) {
+    border.style.width = width + "px";
+  }
+  if (height) {
+    border.style.height = height + "px";
+  }
+  border.style.display = "block";
+}
+
+function setCropperCoverStyle(cover, top, left, width, height) {
+  cover.style.top = top + "px";
+  cover.style.left = left + "px";
+  cover.style.width = width + "px";
+  cover.style.height = height + "px";
+  cover.style.display = "block";
+}
+
+function setCropperHandlerStyle(handler, top, left) {
+  handler.style.top = top + "px";
+  handler.style.left = left + "px";
+  handler.style.display = "block";
+}
+
+function setModeCrop() {
+  this.toggleMode("crop");
+}
+
+function setModeMove() {
+  var img = this.containerElement.firstChild;
+  var s = getComputedStyle(img);
+  var top = parseInt(s.top);
+  var left = parseInt(s.left);
+  this.toggleMode("move", { top: top, left: left });
+}
+
+function toggleMode(mode) {
+  var extras = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+  this.actions.toggleMode(mode, extras);
+}
 
 exports.clearCropper = clearCropper;
 exports.createIcon = createIcon;
+exports.draw = draw;
 exports.drawCovers = drawCovers;
 exports.drawCropper = drawCropper;
 exports.drawHandlers = drawHandlers;
@@ -1855,11 +1783,11 @@ exports.getSelectedRect = getSelectedRect;
 exports.initCropper = initCropper;
 exports.initCropperStyle = initCropperStyle;
 exports.photoZoom = photoZoom;
+exports.photoZoomIn = photoZoomIn;
+exports.photoZoomOut = photoZoomOut;
 exports.setModeCrop = setModeCrop;
 exports.setModeMove = setModeMove;
 exports.toggleMode = toggleMode;
-exports.photoZoomOut = photoZoomOut;
-exports.photoZoomIn = photoZoomIn;
 
 },{}],26:[function(require,module,exports){
 'use strict';
@@ -1984,7 +1912,6 @@ function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio) {
   subX = Math.abs(subX);
   subY = Math.abs(subY);
   if (subX / ratio <= subY) {
-    console.log("Y");
     subY = subX / ratio;
     if (ordY == -1) {
       cords.cropperStartY = cords.cropperEndY - subY * positiveY;
@@ -1993,15 +1920,12 @@ function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio) {
     }
   } else {
     subX = subY * ratio;
-    console.log("X");
     if (ordX == -1) {
       cords.cropperStartX = cords.cropperEndX - subX * positiveX;
     } else if (ordX == 1) {
       cords.cropperEndX = cords.cropperStartX + subX * positiveX;
     }
   }
-  console.log(subX / subY);
-  console.log(Math.abs((cords.cropperStartX - cords.cropperEndX) / (cords.cropperStartY - cords.cropperEndY)));
   return cords;
 }
 

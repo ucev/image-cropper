@@ -7,19 +7,17 @@ const uglify = require('gulp-uglify');
 const concat = require('gulp-concat');
 const minifyCss = require('gulp-minify-css');
 
-gulp.task("scripts", function() {
+gulp.task("scripts", function () {
   return browserify("./src/js/image-cropper.js", {
     standalone: "Cropper"
-  }).transform("babelify", {presets: ["es2015"]})
-  .bundle()
-  .pipe(source("cropper.js"))
-  .pipe(gulp.dest("dist/js"))
-  .pipe(rename("cropper.min.js"))
-  .pipe(gulp.dest("dist/js"));
+  }).transform("babelify", { presets: ["es2015"] })
+    .bundle()
+    .pipe(source("cropper.js"))
+    .pipe(gulp.dest("dist/js"))
 });
 
 
-gulp.task("scripts-prod", ["scripts"], function() {
+gulp.task("scripts-prod", ["scripts"], function () {
   return gulp.src("./dist/js/cropper.js")
     .pipe(concat("cropper.min.js"))
     .pipe(uglify())
@@ -27,14 +25,13 @@ gulp.task("scripts-prod", ["scripts"], function() {
     .pipe(gulp.dest("./dist/js"));
 })
 
-gulp.task("styles", function() {
+gulp.task("styles", function () {
   return gulp.src("./src/css/image-cropper.css")
-    .pipe(uglify())
     .pipe(rename("cropper.css"))
     .pipe(gulp.dest("dist/css"))
 })
 
-gulp.task("styles-prod", function() {
+gulp.task("styles-prod", function () {
   return gulp.src("./dist/css/cropper.css")
     .pipe(concat("./cropper.min.css"))
     .pipe(minifyCss())
@@ -42,4 +39,9 @@ gulp.task("styles-prod", function() {
     .pipe(gulp.dest("./dist/css"));
 })
 
-//gulp.watch(["src/js/**/*.js", "src/css/*"], ["scripts", "styles"]);
+gulp.task("auto", function () {
+  gulp.watch(["src/js/**/*.js", "src/css/*"], ["scripts", "styles"]);
+})
+
+gulp.task("dev", ["scripts", "styles", "auto"]);
+gulp.task("prod", ["scripts-prod", "styles-prod"]);
