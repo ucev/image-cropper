@@ -22,6 +22,7 @@ var toolbarButtons = {
     name: "移动图片",
     className: "fa fa-arrows",
     action: setModeMove,
+    state: "movable"
   },
   crop: {
     name: "剪裁",
@@ -32,13 +33,29 @@ var toolbarButtons = {
     name: "放大",
     className: "fa fa-search-plus",
     action: photoZoomOut,
+    state: "zoomable"
   },
   zoomIn: {
     name: "缩小",
     className: "fa fa-search-minus",
-    action: photoZoomIn
+    action: photoZoomIn,
+    state: "zoomable"
   },
+  clear: {
+    name: "清除",
+    className: "fa fa-times",
+    action: clear
+  },
+  reset: {
+    name: "重置",
+    className: "fa fa-refresh",
+    action: reset
+  }
 };
+
+function clear() {
+  this.actions.clearCropper();
+}
 
 function clearCropper() {
   var handlers = this.containerElement.getElementsByClassName("cropper-handler");
@@ -51,6 +68,37 @@ function clearCropper() {
   for (var c of covers) {
     c.style.display = "none";
   }
+}
+
+function repositionImage() {
+  var container = this.containerElement,
+    ele = container.firstChild,
+    cStyle = getComputedStyle(container),
+    cWidth = parseInt(cStyle.width),
+    cHeight = parseInt(cStyle.height),
+    sWidth = this.srcImageWidth,
+    sHeight = this.srcImageHeight;
+  var tWidth, tHeight, tTop, tLeft;
+  if (sWidth > sHeight) {
+    tWidth = sWidth * cHeight / sHeight;
+    tHeight = cHeight;
+    tTop = 0;
+    tLeft = (cWidth - tWidth) / 2;
+  } else {
+    tWidth = cWidth;
+    tHeight = sHeight * cWidth / sWidth;
+    tTop = (cHeight - tHeight) / 2;
+    tLeft = 0;
+  }
+  ele.style.width = tWidth + "px";
+  ele.style.height = tHeight + "px";
+  ele.style.left = tLeft + "px";
+  ele.style.top = tTop + "px";
+}
+
+function reset() {
+  this.repositionImage();
+  this.clear();
 }
 
 function createIcon(options) {
@@ -80,7 +128,7 @@ function draw() {
   if (state.options.preview) {
     this.drawPreview(state);
   }
-  switch (state.pointerMode) {
+  switch (state.dragMode) {
     case "crop":
     case "move":
       var sX = state.cropperStartX,
@@ -225,7 +273,11 @@ function drawHandlers(startX, startY, endX, endY) {
 function drawPreview(state) {
   if (!this.previewContext) return;
   var { x: srcX, y: srcY, width: srcWidth, height: srcHeight } = this.getSelectedRect(state);
-  if (srcWidth <= 10 || srcHeight <= 10) return;
+  if (srcWidth <= 10 || srcHeight <= 10) {
+    this.clearCropper();
+    this.previewContext.clearRect(0, 0, this.previewCanvasWidth, this.previewCanvasHeight);
+    return;
+  }
   // 
   var dx, dy, dWidth, dHeight;
   // 横向画满
@@ -265,7 +317,7 @@ function getImage(type = "image/png") {
   canvas.setAttribute("width", srcWidth);
   canvas.setAttribute("height", srcHeight);
   var ctx = canvas.getContext("2d");
-  ctx.drawImage(sourceImage, srcX, srcY, srcWidth, srcHeight, 0, 0, srcWidth, srcHeight);
+  ctx.drawImage(this.sourceImage, srcX, srcY, srcWidth, srcHeight, 0, 0, srcWidth, srcHeight);
   return canvas.toDataURL(type);
 }
 
@@ -275,8 +327,8 @@ function getSelectedRect(state) {
   var offset = getElementOffset(this.containerElement);
   var tWidth = parseInt(s.width);
   var tHeight = parseInt(s.height);
-  var tTop = parseInt(s.top);
-  var tLeft = parseInt(s.left);
+  var tTop = parseInt(s.top) || 0;
+  var tLeft = parseInt(s.left) || 0;
   var sX = Math.min(state.cropperStartX, state.cropperEndX) - offset.left,
     sY = Math.min(state.cropperStartY, state.cropperEndY) - offset.top,
     eX = Math.max(state.cropperStartX, state.cropperEndX) - offset.left,
@@ -296,68 +348,89 @@ function initCropper(options) {
   if (!ele) {
     throw new Error("没有指定目标节点");
   }
-  [this.rootElement, this.containerElement] = this.initCropperStyle(ele);
+  this.rootElement = document.createElement("div");
+  this.rootElement.className = "cropper-container";
+  this.containerElement = document.createElement("div");
+  this.containerElement.className = "cropper-img-container";
   var parent = ele.parentNode;
-  var nextNode = ele.nextSibling;
   parent.removeChild(ele);
   this.containerElement.appendChild(ele);
   this.rootElement.appendChild(this.containerElement);
   // 
-  ele.style.position = "absolute";
-  parent.insertBefore(this.rootElement, nextNode);
-  this.containerElementStyle = getComputedStyle(this.containerElement);
+  parent.appendChild(this.rootElement);
   // tool bar 
-
-  if (options.toolbar) {
-    this.toolbarElement = document.createElement("div");
-    this.toolbarElement.className = "cropper-toolbar";
-    for (var item in toolbarButtons) {
-      this.toolbarElement.appendChild(createIcon.call(this, toolbarButtons[item]));
+  ele.onload = () => {
+    // preview or get image canvas
+    this.sourceImage = new Image();
+    var that = this;
+    this.sourceImage.onload = function () {
+      that.srcImageWidth = that.sourceImage.width;
+      that.srcImageHeight = that.sourceImage.height;
+      //
+      that.initCropperStyle();
+      if (options.toolbar) {
+        that.toolbarElement = document.createElement("div");
+        that.toolbarElement.className = "cropper-toolbar";
+        var iconCnt = 0;
+        for (var item in toolbarButtons) {
+          if (toolbarButtons[item].state && !options[toolbarButtons[item].state]) {
+            continue;
+          }
+          iconCnt++;
+          that.toolbarElement.appendChild(createIcon.call(that, toolbarButtons[item]));
+        }
+        that.rootElement.appendChild(that.toolbarElement);
+        // 设置 toolbar 宽度
+        var s = getComputedStyle(that.toolbarElement.firstChild);
+        var iconWidth = parseInt(getComputedStyle(that.toolbarElement.firstChild).width);
+        that.toolbarElement.style.width = iconCnt * iconWidth + "px";
+      }
+      // canvas
+      that.previewCanvas = document.createElement("canvas");
+      that.previewCanvas.className = "cropper-preview-canvas";
+      if (options.preview) {
+        options.preview.appendChild(that.previewCanvas);
+        var ps = getComputedStyle(options.preview);
+        that.previewCanvasWidth = parseInt(ps.width);
+        that.previewCanvasHeight = parseInt(ps.height);
+      } else {
+        that.previewCanvasWidth = srcImageWidth;
+        that.previewCanvasHeight = srcImageHeight;
+      }
+      that.previewCanvas.setAttribute("width", that.previewCanvasWidth);
+      that.previewCanvas.setAttribute("height", that.previewCanvasHeight);
+      that.previewContext = that.previewCanvas.getContext("2d");
+      that.repositionImage();
     }
-    this.rootElement.appendChild(this.toolbarElement);
+    this.sourceImage.src = ele.src;
   }
-  // preview or get image canvas
-  this.sourceImage = new Image();
-  var that = this;
-  this.sourceImage.onload = function () {
-    that.srcImageWidth = that.sourceImage.width;
-    that.srcImageHeight = that.sourceImage.height;
-    // canvas
-    that.previewCanvas = document.createElement("canvas");
-    that.previewCanvas.className = "cropper-preview-canvas";
-    if (options.preview) {
-      options.preview.appendChild(that.previewCanvas);
-      var ps = getComputedStyle(options.preview);
-      that.previewCanvasWidth = parseInt(ps.width);
-      that.previewCanvasHeight = parseInt(ps.height);
-    } else {
-      that.previewCanvasWidth = srcImageWidth;
-      that.previewCanvasHeight = srcImageHeight;
-    }
-    that.previewCanvas.setAttribute("width", that.previewCanvasWidth);
-    that.previewCanvas.setAttribute("height", that.previewCanvasHeight);
-    that.previewContext = that.previewCanvas.getContext("2d");
-  }
-  this.sourceImage.src = ele.src;
   return this.containerElement;
 }
 
-function initCropperStyle(src) {
-  var target = document.createElement("div");
-  var container = document.createElement("div");
+function initCropperStyle() {
+  var root = this.rootElement.parentNode,
+    img = this.containerElement.firstChild,
+    ratio = this.srcImageWidth / this.srcImageHeight;
   var styles = [
-    'width', 'height',
+    'width', /*'height',*/
     'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom',
     'marginLeft', 'marginTop', 'marginRight', 'marginBottom',
   ];
-  var computedStyle = getComputedStyle(src);
+  var computedStyle = getComputedStyle(root);
+  var newHeight = parseFloat(computedStyle.width) / ratio;
+  console.log(`${computedStyle.width}, ${computedStyle.height}`);
   for (var k of styles) {
-    target.style[k] = computedStyle[k];
-    container.style[k] = computedStyle[k];
+    this.rootElement.style[k] = computedStyle[k];
+    this.containerElement.style[k] = computedStyle[k];
   }
-  target.className = "cropper-container";
-  container.className = "cropper-img-container";
-  return [target, container];
+  img.style.position = "absolute";
+  img.style.width = this.containerElement.style.width;
+  //
+  //root.style.height = newHeight + "px";
+  //this.rootElement.style.height = newHeight + "px";
+  this.containerElement.style.height = newHeight + "px";
+  img.style.height = newHeight + "px";
+  this.repositionImage();
 }
 
 function injectFontAwesome() {
@@ -374,13 +447,22 @@ function injectFontAwesome() {
   }
   if (inject) {
     var link = document.createElement("link");
-		link.rel = "stylesheet";
-		link.href = "https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css";
+    link.rel = "stylesheet";
+    link.href = "https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css";
     document.getElementsByTagName("head")[0].appendChild(link);
   }
 }
 
+function onresize() {
+  this.clear();
+  this.initCropperStyle();
+}
+
 function photoZoom(percent) {
+  var state = this.actions.getState();
+  if (!state.options.zoomable) {
+    throw new Error("The photo is unzommable");
+  }
   var ele = this.containerElement.firstChild;
   var cs = getComputedStyle(this.containerElement);
   var cw = parseInt(cs.width);
@@ -444,10 +526,14 @@ function setModeCrop() {
 }
 
 function setModeMove() {
+  var state = this.actions.getState();
+  if (!state.options.movable) {
+    throw new Error("The cropper is unmovable");
+  }
   var img = this.containerElement.firstChild;
   var s = getComputedStyle(img);
-  var top = parseInt(s.top);
-  var left = parseInt(s.left);
+  var top = parseInt(s.top) || 0;
+  var left = parseInt(s.left) || 0;
   this.toggleMode("move", { top: top, left: left });
 }
 
@@ -455,6 +541,7 @@ function toggleMode(mode, extras = {}) {
   this.actions.toggleMode(mode, extras);
 }
 
+exports.clear = clear;
 exports.clearCropper = clearCropper;
 exports.createIcon = createIcon;
 exports.draw = draw;
@@ -467,9 +554,11 @@ exports.getImage = getImage;
 exports.getSelectedRect = getSelectedRect;
 exports.initCropper = initCropper;
 exports.initCropperStyle = initCropperStyle;
+exports.onresize = onresize;
 exports.photoZoom = photoZoom;
 exports.photoZoomIn = photoZoomIn;
 exports.photoZoomOut = photoZoomOut;
+exports.repositionImage = repositionImage;
 exports.setModeCrop = setModeCrop;
 exports.setModeMove = setModeMove;
 exports.toggleMode = toggleMode;

@@ -13,7 +13,11 @@ class ImageCropper {
     this.actions.subscribe(() => {
       this.draw();
     }); 
-    this.initCropper(this.actions.getState().options);
+    var curState = this.actions.getState();
+    this.initCropper(curState.options);
+    window.addEventListener("resize", () => {
+      this.onresize();
+    })
     var keyEvents = _keyEvents(this.actions);
     var mouseEvents = _mouseEvents(this.actions);
     window.document.addEventListener("keydown", keyEvents);

@@ -25,7 +25,12 @@ class Actions {
     this.store.dispatch({type: "SET_OPTIONS", options: options});
   }
   toggleMode(mode, extras = {}) {
+    console.log(mode);
+    console.log(extras);
     this.store.dispatch({type: "SET_MODE", mode: mode, extras: extras});
+  }
+  reset() {
+    alert("reset");
   }
   subscribe(updateFunc) {
     this.unsubscribe();

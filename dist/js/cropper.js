@@ -1129,7 +1129,12 @@ function symbolObservablePonyfill(root) {
 
 var defaults = {
   aspectRatio: 0,
-  toolbar: true
+  dragMode: "crop",
+  movable: true,
+  preview: undefined,
+  responsive: false,
+  toolbar: true,
+  zoomable: true
 };
 
 module.exports = defaults;
@@ -1203,7 +1208,11 @@ var ImageCropper = function ImageCropper(options) {
   this.actions.subscribe(function () {
     _this.draw();
   });
-  this.initCropper(this.actions.getState().options);
+  var curState = this.actions.getState();
+  this.initCropper(curState.options);
+  window.addEventListener("resize", function () {
+    _this.onresize();
+  });
   var keyEvents = _keyEvents(this.actions);
   var mouseEvents = _mouseEvents(this.actions);
   window.document.addEventListener("keydown", keyEvents);
@@ -1220,8 +1229,6 @@ module.exports = ImageCropper;
 
 },{"./events":23,"./render":25,"./state/action":26}],25:[function(require,module,exports){
 "use strict";
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 /**
  * 
@@ -1246,7 +1253,8 @@ var toolbarButtons = {
   movePhoto: {
     name: "移动图片",
     className: "fa fa-arrows",
-    action: setModeMove
+    action: setModeMove,
+    state: "movable"
   },
   crop: {
     name: "剪裁",
@@ -1256,14 +1264,30 @@ var toolbarButtons = {
   zoomOut: {
     name: "放大",
     className: "fa fa-search-plus",
-    action: photoZoomOut
+    action: photoZoomOut,
+    state: "zoomable"
   },
   zoomIn: {
     name: "缩小",
     className: "fa fa-search-minus",
-    action: photoZoomIn
+    action: photoZoomIn,
+    state: "zoomable"
+  },
+  clear: {
+    name: "清除",
+    className: "fa fa-times",
+    action: clear
+  },
+  reset: {
+    name: "重置",
+    className: "fa fa-refresh",
+    action: reset
   }
 };
+
+function clear() {
+  this.actions.clearCropper();
+}
 
 function clearCropper() {
   var handlers = this.containerElement.getElementsByClassName("cropper-handler");
@@ -1321,6 +1345,37 @@ function clearCropper() {
   }
 }
 
+function repositionImage() {
+  var container = this.containerElement,
+      ele = container.firstChild,
+      cStyle = getComputedStyle(container),
+      cWidth = parseInt(cStyle.width),
+      cHeight = parseInt(cStyle.height),
+      sWidth = this.srcImageWidth,
+      sHeight = this.srcImageHeight;
+  var tWidth, tHeight, tTop, tLeft;
+  if (sWidth > sHeight) {
+    tWidth = sWidth * cHeight / sHeight;
+    tHeight = cHeight;
+    tTop = 0;
+    tLeft = (cWidth - tWidth) / 2;
+  } else {
+    tWidth = cWidth;
+    tHeight = sHeight * cWidth / sWidth;
+    tTop = (cHeight - tHeight) / 2;
+    tLeft = 0;
+  }
+  ele.style.width = tWidth + "px";
+  ele.style.height = tHeight + "px";
+  ele.style.left = tLeft + "px";
+  ele.style.top = tTop + "px";
+}
+
+function reset() {
+  this.repositionImage();
+  this.clear();
+}
+
 function createIcon(options) {
   var ele = document.createElement("a");
   ele.className = options.className;
@@ -1354,7 +1409,7 @@ function draw() {
   if (state.options.preview) {
     this.drawPreview(state);
   }
-  switch (state.pointerMode) {
+  switch (state.dragMode) {
     case "crop":
     case "move":
       var sX = state.cropperStartX,
@@ -1505,7 +1560,11 @@ function drawPreview(state) {
       srcWidth = _getSelectedRect.width,
       srcHeight = _getSelectedRect.height;
 
-  if (srcWidth <= 10 || srcHeight <= 10) return;
+  if (srcWidth <= 10 || srcHeight <= 10) {
+    this.clearCropper();
+    this.previewContext.clearRect(0, 0, this.previewCanvasWidth, this.previewCanvasHeight);
+    return;
+  }
   // 
   var dx, dy, dWidth, dHeight;
   // 横向画满
@@ -1553,7 +1612,7 @@ function getImage() {
   canvas.setAttribute("width", srcWidth);
   canvas.setAttribute("height", srcHeight);
   var ctx = canvas.getContext("2d");
-  ctx.drawImage(sourceImage, srcX, srcY, srcWidth, srcHeight, 0, 0, srcWidth, srcHeight);
+  ctx.drawImage(this.sourceImage, srcX, srcY, srcWidth, srcHeight, 0, 0, srcWidth, srcHeight);
   return canvas.toDataURL(type);
 }
 
@@ -1563,8 +1622,8 @@ function getSelectedRect(state) {
   var offset = getElementOffset(this.containerElement);
   var tWidth = parseInt(s.width);
   var tHeight = parseInt(s.height);
-  var tTop = parseInt(s.top);
-  var tLeft = parseInt(s.left);
+  var tTop = parseInt(s.top) || 0;
+  var tLeft = parseInt(s.left) || 0;
   var sX = Math.min(state.cropperStartX, state.cropperEndX) - offset.left,
       sY = Math.min(state.cropperStartY, state.cropperEndY) - offset.top,
       eX = Math.max(state.cropperStartX, state.cropperEndX) - offset.left,
@@ -1579,69 +1638,81 @@ function getSelectedRect(state) {
 }
 
 function initCropper(options) {
+  var _this = this;
+
   injectFontAwesome();
   var ele = options.element;
   if (!ele) {
     throw new Error("没有指定目标节点");
   }
-
-  var _initCropperStyle = this.initCropperStyle(ele);
-
-  var _initCropperStyle2 = _slicedToArray(_initCropperStyle, 2);
-
-  this.rootElement = _initCropperStyle2[0];
-  this.containerElement = _initCropperStyle2[1];
-
+  this.rootElement = document.createElement("div");
+  this.rootElement.className = "cropper-container";
+  this.containerElement = document.createElement("div");
+  this.containerElement.className = "cropper-img-container";
   var parent = ele.parentNode;
-  var nextNode = ele.nextSibling;
   parent.removeChild(ele);
   this.containerElement.appendChild(ele);
   this.rootElement.appendChild(this.containerElement);
   // 
-  ele.style.position = "absolute";
-  parent.insertBefore(this.rootElement, nextNode);
-  this.containerElementStyle = getComputedStyle(this.containerElement);
+  parent.appendChild(this.rootElement);
   // tool bar 
-
-  if (options.toolbar) {
-    this.toolbarElement = document.createElement("div");
-    this.toolbarElement.className = "cropper-toolbar";
-    for (var item in toolbarButtons) {
-      this.toolbarElement.appendChild(createIcon.call(this, toolbarButtons[item]));
-    }
-    this.rootElement.appendChild(this.toolbarElement);
-  }
-  // preview or get image canvas
-  this.sourceImage = new Image();
-  var that = this;
-  this.sourceImage.onload = function () {
-    that.srcImageWidth = that.sourceImage.width;
-    that.srcImageHeight = that.sourceImage.height;
-    // canvas
-    that.previewCanvas = document.createElement("canvas");
-    that.previewCanvas.className = "cropper-preview-canvas";
-    if (options.preview) {
-      options.preview.appendChild(that.previewCanvas);
-      var ps = getComputedStyle(options.preview);
-      that.previewCanvasWidth = parseInt(ps.width);
-      that.previewCanvasHeight = parseInt(ps.height);
-    } else {
-      that.previewCanvasWidth = srcImageWidth;
-      that.previewCanvasHeight = srcImageHeight;
-    }
-    that.previewCanvas.setAttribute("width", that.previewCanvasWidth);
-    that.previewCanvas.setAttribute("height", that.previewCanvasHeight);
-    that.previewContext = that.previewCanvas.getContext("2d");
+  ele.onload = function () {
+    // preview or get image canvas
+    _this.sourceImage = new Image();
+    var that = _this;
+    _this.sourceImage.onload = function () {
+      that.srcImageWidth = that.sourceImage.width;
+      that.srcImageHeight = that.sourceImage.height;
+      //
+      that.initCropperStyle();
+      if (options.toolbar) {
+        that.toolbarElement = document.createElement("div");
+        that.toolbarElement.className = "cropper-toolbar";
+        var iconCnt = 0;
+        for (var item in toolbarButtons) {
+          if (toolbarButtons[item].state && !options[toolbarButtons[item].state]) {
+            continue;
+          }
+          iconCnt++;
+          that.toolbarElement.appendChild(createIcon.call(that, toolbarButtons[item]));
+        }
+        that.rootElement.appendChild(that.toolbarElement);
+        // 设置 toolbar 宽度
+        var s = getComputedStyle(that.toolbarElement.firstChild);
+        var iconWidth = parseInt(getComputedStyle(that.toolbarElement.firstChild).width);
+        that.toolbarElement.style.width = iconCnt * iconWidth + "px";
+      }
+      // canvas
+      that.previewCanvas = document.createElement("canvas");
+      that.previewCanvas.className = "cropper-preview-canvas";
+      if (options.preview) {
+        options.preview.appendChild(that.previewCanvas);
+        var ps = getComputedStyle(options.preview);
+        that.previewCanvasWidth = parseInt(ps.width);
+        that.previewCanvasHeight = parseInt(ps.height);
+      } else {
+        that.previewCanvasWidth = srcImageWidth;
+        that.previewCanvasHeight = srcImageHeight;
+      }
+      that.previewCanvas.setAttribute("width", that.previewCanvasWidth);
+      that.previewCanvas.setAttribute("height", that.previewCanvasHeight);
+      that.previewContext = that.previewCanvas.getContext("2d");
+      that.repositionImage();
+    };
+    _this.sourceImage.src = ele.src;
   };
-  this.sourceImage.src = ele.src;
   return this.containerElement;
 }
 
-function initCropperStyle(src) {
-  var target = document.createElement("div");
-  var container = document.createElement("div");
-  var styles = ['width', 'height', 'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'marginLeft', 'marginTop', 'marginRight', 'marginBottom'];
-  var computedStyle = getComputedStyle(src);
+function initCropperStyle() {
+  var root = this.rootElement.parentNode,
+      img = this.containerElement.firstChild,
+      ratio = this.srcImageWidth / this.srcImageHeight;
+  var styles = ['width', /*'height',*/
+  'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'marginLeft', 'marginTop', 'marginRight', 'marginBottom'];
+  var computedStyle = getComputedStyle(root);
+  var newHeight = parseFloat(computedStyle.width) / ratio;
+  console.log(computedStyle.width + ", " + computedStyle.height);
   var _iteratorNormalCompletion3 = true;
   var _didIteratorError3 = false;
   var _iteratorError3 = undefined;
@@ -1650,8 +1721,8 @@ function initCropperStyle(src) {
     for (var _iterator3 = styles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
       var k = _step3.value;
 
-      target.style[k] = computedStyle[k];
-      container.style[k] = computedStyle[k];
+      this.rootElement.style[k] = computedStyle[k];
+      this.containerElement.style[k] = computedStyle[k];
     }
   } catch (err) {
     _didIteratorError3 = true;
@@ -1668,9 +1739,14 @@ function initCropperStyle(src) {
     }
   }
 
-  target.className = "cropper-container";
-  container.className = "cropper-img-container";
-  return [target, container];
+  img.style.position = "absolute";
+  img.style.width = this.containerElement.style.width;
+  //
+  //root.style.height = newHeight + "px";
+  //this.rootElement.style.height = newHeight + "px";
+  this.containerElement.style.height = newHeight + "px";
+  img.style.height = newHeight + "px";
+  this.repositionImage();
 }
 
 function injectFontAwesome() {
@@ -1693,7 +1769,16 @@ function injectFontAwesome() {
   }
 }
 
+function onresize() {
+  this.clear();
+  this.initCropperStyle();
+}
+
 function photoZoom(percent) {
+  var state = this.actions.getState();
+  if (!state.options.zoomable) {
+    throw new Error("The photo is unzommable");
+  }
   var ele = this.containerElement.firstChild;
   var cs = getComputedStyle(this.containerElement);
   var cw = parseInt(cs.width);
@@ -1757,10 +1842,14 @@ function setModeCrop() {
 }
 
 function setModeMove() {
+  var state = this.actions.getState();
+  if (!state.options.movable) {
+    throw new Error("The cropper is unmovable");
+  }
   var img = this.containerElement.firstChild;
   var s = getComputedStyle(img);
-  var top = parseInt(s.top);
-  var left = parseInt(s.left);
+  var top = parseInt(s.top) || 0;
+  var left = parseInt(s.left) || 0;
   this.toggleMode("move", { top: top, left: left });
 }
 
@@ -1770,6 +1859,7 @@ function toggleMode(mode) {
   this.actions.toggleMode(mode, extras);
 }
 
+exports.clear = clear;
 exports.clearCropper = clearCropper;
 exports.createIcon = createIcon;
 exports.draw = draw;
@@ -1782,9 +1872,11 @@ exports.getImage = getImage;
 exports.getSelectedRect = getSelectedRect;
 exports.initCropper = initCropper;
 exports.initCropperStyle = initCropperStyle;
+exports.onresize = onresize;
 exports.photoZoom = photoZoom;
 exports.photoZoomIn = photoZoomIn;
 exports.photoZoomOut = photoZoomOut;
+exports.repositionImage = repositionImage;
 exports.setModeCrop = setModeCrop;
 exports.setModeMove = setModeMove;
 exports.toggleMode = toggleMode;
@@ -1842,7 +1934,14 @@ var Actions = function () {
     value: function toggleMode(mode) {
       var extras = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+      console.log(mode);
+      console.log(extras);
       this.store.dispatch({ type: "SET_MODE", mode: mode, extras: extras });
+    }
+  }, {
+    key: 'reset',
+    value: function reset() {
+      alert("reset");
     }
   }, {
     key: 'subscribe',
@@ -1891,7 +1990,7 @@ var defaultStates = {
   topOffset: -1,
   leftOffset: -1,
   // cropper point move mode: ["crop", "move", "none"], default "none"
-  pointerMode: "none",
+  dragMode: "none",
   //
   rootCursor: "default"
 };
@@ -1915,14 +2014,14 @@ function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio) {
     subY = subX / ratio;
     if (ordY == -1) {
       cords.cropperStartY = cords.cropperEndY - subY * positiveY;
-    } else if (ordY == 1) {
+    } else {
       cords.cropperEndY = cords.cropperStartY + subY * positiveY;
     }
   } else {
     subX = subY * ratio;
     if (ordX == -1) {
       cords.cropperStartX = cords.cropperEndX - subX * positiveX;
-    } else if (ordX == 1) {
+    } else {
       cords.cropperEndX = cords.cropperStartX + subX * positiveX;
     }
   }
@@ -1939,7 +2038,7 @@ var reducer = function reducer() {
 
   switch (action.type) {
     case "CLEAR_CROPPER":
-      return Object.assign({}, state, { isCropDown: false, cropperStartX: -1, cropperStartY: -1, cropperEndX: -1, cropperEndY: -1, pointerMode: "none", rootCursor: "default" });
+      return Object.assign({}, state, { isCropDown: false, cropperStartX: -1, cropperStartY: -1, cropperEndX: -1, cropperEndY: -1, dragMode: "none", rootCursor: "default" });
     case "CROPPER_BORDER_END":
       if (state.isCropDown) {
         var sX = Math.min(state.cropperStartX, state.cropperEndX);
@@ -2016,7 +2115,7 @@ var reducer = function reducer() {
         } else if (x > sX && x < eX && y > sY && y < eY) {
           obj.rootCursor = "move";
         } else {
-          if (state.pointerMode == "move") {
+          if (state.dragMode == "move") {
             obj.rootCursor = "move";
           } else {
             obj.rootCursor = "default";
@@ -2025,8 +2124,8 @@ var reducer = function reducer() {
         return Object.assign({}, state, obj);
       }
     case "CROPPER_BORDER_START":
-      if (state.pointerMode == "none") {
-        return Object.assign({}, state, { isCropDown: true, cropperStartX: action.x, cropperStartY: action.y, cropperEndX: action.x, cropperEndY: action.y, pointerMode: "crop" });
+      if (state.dragMode == "none") {
+        return Object.assign({}, state, { isCropDown: true, cropperStartX: action.x, cropperStartY: action.y, cropperEndX: action.x, cropperEndY: action.y, dragMode: "crop" });
       } else {
         var obj = {};
         obj.isDragDown = true;
@@ -2062,7 +2161,7 @@ var reducer = function reducer() {
         } else if (action.x > sX && action.x < eX && action.y > sY && action.y < eY) {
           obj.dragPoint = "";
         } else {
-          if (state.pointerMode == "crop") {
+          if (state.dragMode == "crop") {
             obj.isDragDown = false;
             obj.dragStartY = -1;
             obj.dragStartY = -1;
@@ -2085,9 +2184,9 @@ var reducer = function reducer() {
       }
     case "SET_MODE":
       var obj = {};
-      obj.pointerMode = action.mode;
+      obj.dragMode = action.mode;
       var extras = action.extras;
-      if (obj.pointerMode == 'move') {
+      if (obj.dragMode == 'move') {
         obj.rootCursor = "move";
         obj.topOffset = extras.top;
         obj.leftOffset = extras.left;
@@ -2097,7 +2196,7 @@ var reducer = function reducer() {
       return Object.assign({}, state, obj);
     case "SET_OPTIONS":
       var newOptions = Object.assign({}, state.options, action.options);
-      return Object.assign({}, state, { options: newOptions });
+      return Object.assign({}, state, { options: newOptions, dragMode: newOptions.dragMode || state.dragMode });
     default:
       return Object.assign({}, state);
   }

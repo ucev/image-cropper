@@ -19,7 +19,7 @@ var defaultStates = {
   topOffset: -1,
   leftOffset: -1,
   // cropper point move mode: ["crop", "move", "none"], default "none"
-  pointerMode: "none",
+  dragMode: "none",
   //
   rootCursor: "default"
 };
@@ -43,14 +43,14 @@ function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio) {
     subY = subX / ratio;
     if (ordY == -1) {
       cords.cropperStartY = cords.cropperEndY - subY * positiveY;
-    } else if (ordY == 1) {
+    } else {
       cords.cropperEndY = cords.cropperStartY + subY * positiveY;
     }
   } else {
     subX = subY * ratio;
     if (ordX == -1) {
       cords.cropperStartX = cords.cropperEndX - subX * positiveX;
-    } else if (ordX == 1) {
+    } else {
       cords.cropperEndX = cords.cropperStartX + subX * positiveX;
     }
   }
@@ -64,7 +64,7 @@ function normalizeCoordinateDuringCrop(sx, sy, ex, ey, ratio) {
 const reducer = (state = defaultStates, action) => {
   switch (action.type) {
     case "CLEAR_CROPPER":
-      return Object.assign({}, state, { isCropDown: false, cropperStartX: -1, cropperStartY: -1, cropperEndX: -1, cropperEndY: -1, pointerMode: "none", rootCursor: "default" })
+      return Object.assign({}, state, { isCropDown: false, cropperStartX: -1, cropperStartY: -1, cropperEndX: -1, cropperEndY: -1, dragMode: "none", rootCursor: "default" })
     case "CROPPER_BORDER_END":
       if (state.isCropDown) {
         var sX = Math.min(state.cropperStartX, state.cropperEndX);
@@ -141,7 +141,7 @@ const reducer = (state = defaultStates, action) => {
         } else if (x > sX && x < eX && y > sY && y < eY) {
           obj.rootCursor = "move";
         } else {
-          if (state.pointerMode == "move") {
+          if (state.dragMode == "move") {
             obj.rootCursor = "move";
           } else {
             obj.rootCursor = "default";
@@ -150,8 +150,8 @@ const reducer = (state = defaultStates, action) => {
         return Object.assign({}, state, obj);
       }
     case "CROPPER_BORDER_START":
-      if (state.pointerMode == "none") {
-        return Object.assign({}, state, { isCropDown: true, cropperStartX: action.x, cropperStartY: action.y, cropperEndX: action.x, cropperEndY: action.y, pointerMode: "crop" });
+      if (state.dragMode == "none") {
+        return Object.assign({}, state, { isCropDown: true, cropperStartX: action.x, cropperStartY: action.y, cropperEndX: action.x, cropperEndY: action.y, dragMode: "crop" });
       } else {
         var obj = {};
         obj.isDragDown = true;
@@ -187,7 +187,7 @@ const reducer = (state = defaultStates, action) => {
         } else if (action.x > sX && action.x < eX && action.y > sY && action.y < eY) {
           obj.dragPoint = "";
         } else {
-          if (state.pointerMode == "crop") {
+          if (state.dragMode == "crop") {
             obj.isDragDown = false;
             obj.dragStartY = -1;
             obj.dragStartY = -1;
@@ -210,9 +210,9 @@ const reducer = (state = defaultStates, action) => {
       }
     case "SET_MODE":
       var obj = {};
-      obj.pointerMode = action.mode;
+      obj.dragMode = action.mode;
       var extras = action.extras;
-      if (obj.pointerMode == 'move') {
+      if (obj.dragMode == 'move') {
         obj.rootCursor = "move";
         obj.topOffset = extras.top;
         obj.leftOffset = extras.left;
@@ -222,7 +222,7 @@ const reducer = (state = defaultStates, action) => {
       return Object.assign({}, state, obj)
     case "SET_OPTIONS":
       var newOptions = Object.assign({}, state.options, action.options);
-      return Object.assign({}, state, { options: newOptions });
+      return Object.assign({}, state, { options: newOptions, dragMode: newOptions.dragMode || state.dragMode });
     default:
       return Object.assign({}, state);
   }
