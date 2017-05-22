@@ -1236,6 +1236,7 @@ module.exports = ImageCropper;
  * var rootElement = undefined,
  *   containerElement = undefined,
  *   toolbarElement = undefined,
+ *   showToolbarElement = undefined,
  *   containerElementStyle = undefined,
  *   sourceImage = undefined,
  *   previewCanvas = undefined,
@@ -1282,6 +1283,11 @@ var toolbarButtons = {
     name: "重置",
     className: "fa fa-refresh",
     action: reset
+  },
+  hide: {
+    name: "隐藏工具栏",
+    className: "fa fa-caret-down",
+    action: hideToolbar
   }
 };
 
@@ -1637,6 +1643,16 @@ function getSelectedRect(state) {
   return { x: srcX, y: srcY, width: srcWidth, height: srcHeight };
 }
 
+function showToolbar() {
+  this.showToolbarElement.style.display = "none";
+  this.toolbarElement.style.display = "inline-block";
+}
+
+function hideToolbar() {
+  this.toolbarElement.style.display = "none";
+  this.showToolbarElement.style.display = "inline-block";
+}
+
 function initCropper(options) {
   var _this = this;
 
@@ -1681,6 +1697,13 @@ function initCropper(options) {
         var s = getComputedStyle(that.toolbarElement.firstChild);
         var iconWidth = parseInt(getComputedStyle(that.toolbarElement.firstChild).width);
         that.toolbarElement.style.width = iconCnt * iconWidth + "px";
+        // showToolbarElement
+        that.showToolbarElement = document.createElement("div");
+        that.showToolbarElement.className = "cropper-toolbar-show cropper-toolbar";
+        var showToolbarIcon = that.createIcon({ name: "显示工具栏", className: "fa fa-caret-up", action: showToolbar });
+        that.showToolbarElement.appendChild(showToolbarIcon);
+        that.showToolbarElement.style.display = "none";
+        that.rootElement.appendChild(that.showToolbarElement);
       }
       // canvas
       that.previewCanvas = document.createElement("canvas");
@@ -1741,9 +1764,8 @@ function initCropperStyle() {
 
   img.style.position = "absolute";
   img.style.width = this.containerElement.style.width;
-  //
-  //root.style.height = newHeight + "px";
-  //this.rootElement.style.height = newHeight + "px";
+  root.style.height = newHeight + "px";
+  this.rootElement.style.height = newHeight + "px";
   this.containerElement.style.height = newHeight + "px";
   img.style.height = newHeight + "px";
   this.repositionImage();
@@ -1870,6 +1892,7 @@ exports.drawPreview = drawPreview;
 exports.getElementOffset = getElementOffset;
 exports.getImage = getImage;
 exports.getSelectedRect = getSelectedRect;
+exports.hideToolbar = hideToolbar;
 exports.initCropper = initCropper;
 exports.initCropperStyle = initCropperStyle;
 exports.onresize = onresize;
@@ -1879,6 +1902,7 @@ exports.photoZoomOut = photoZoomOut;
 exports.repositionImage = repositionImage;
 exports.setModeCrop = setModeCrop;
 exports.setModeMove = setModeMove;
+exports.showToolbar = showToolbar;
 exports.toggleMode = toggleMode;
 
 },{}],26:[function(require,module,exports){

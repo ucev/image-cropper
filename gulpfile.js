@@ -14,8 +14,6 @@ gulp.task("scripts", function () {
     .bundle()
     .pipe(source("cropper.js"))
     .pipe(gulp.dest("dist/js"))
-    .pipe(rename("cropper.js"))
-    .pipe(gulp.dest("/Users/ucev/Sites/cropper/js"));
 });
 
 

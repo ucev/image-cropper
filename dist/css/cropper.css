@@ -15,9 +15,10 @@
 
 .cropper-toolbar {
   display: inline-block;
-  position: relative;
+  position: absolute;
   z-index: 10;
   left: 50%;
+  bottom: 0;
   transform: translateX(-50%);
   background-color: rgba(3, 6, 8, 0.8);
   border-radius: 5px;
