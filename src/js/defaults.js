@@ -1,5 +1,6 @@
 var defaults = {
   aspectRatio: 0,
+  cropperMode: 'none',
   dragMode: "crop",
   movable: true,
   preview: undefined,

@@ -18,6 +18,9 @@
  * 
  */
 
+const getComputedStyle = require('./helper').getComputedStyle;
+const getElementOffset = require('./helper').getElementOffset;
+
 var toolbarButtons = {
   movePhoto: {
     name: "移动图片",
@@ -211,16 +214,12 @@ function drawCovers(startX, startY, endX, endY) {
 }
 
 function drawCropper(x1, y1, x2, y2) {
+  var options = this.actions.getState().options;
   var startX = Math.min(x1, x2);
   var startY = Math.min(y1, y2);
   var endX = Math.max(x1, x2);
   var endY = Math.max(y1, y2);
   if (endY - startY < 10 && endX - startX < 10) return;
-  var offset = getElementOffset(this.containerElement);
-  startX -= offset.left;
-  startY -= offset.top;
-  endX -= offset.left;
-  endY -= offset.top;
   this.drawCovers(startX, startY, endX, endY);
   this.drawHandlers(startX, startY, endX, endY);
 }
@@ -302,20 +301,6 @@ function drawPreview(state) {
   this.previewContext.drawImage(this.sourceImage, srcX, srcY, srcWidth, srcHeight, dx, dy, dWidth, dHeight);
 }
 
-function getComputedStyle(ele) {
-  return ele.ownerDocument.defaultView.getComputedStyle(ele);
-}
-
-function getElementOffset(ele) {
-  var offsetLeft = 0, offsetTop = 0;
-  while (ele) {
-    offsetLeft += ele.offsetLeft;
-    offsetTop += ele.offsetTop;
-    ele = ele.offsetParent;
-  }
-  return { left: offsetLeft, top: offsetTop };
-}
-
 function getImage(type = "image/png") {
   var { x: srcX, y: srcY, width: srcWidth, height: srcHeight } = this.getSelectedRect();
   if (srcWidth <= 10 || srcHeight <= 10) return;
@@ -330,15 +315,14 @@ function getImage(type = "image/png") {
 function getSelectedRect(state) {
   state = state || this.actions.getState();
   var s = getComputedStyle(this.containerElement.firstChild);
-  var offset = getElementOffset(this.containerElement);
   var tWidth = parseInt(s.width);
   var tHeight = parseInt(s.height);
   var tTop = parseInt(s.top) || 0;
   var tLeft = parseInt(s.left) || 0;
-  var sX = Math.min(state.cropperStartX, state.cropperEndX) - offset.left,
-    sY = Math.min(state.cropperStartY, state.cropperEndY) - offset.top,
-    eX = Math.max(state.cropperStartX, state.cropperEndX) - offset.left,
-    eY = Math.max(state.cropperStartY, state.cropperEndY) - offset.top;
+  var sX = Math.min(state.cropperStartX, state.cropperEndX),
+    sY = Math.min(state.cropperStartY, state.cropperEndY),
+    eX = Math.max(state.cropperStartX, state.cropperEndX),
+    eY = Math.max(state.cropperStartY, state.cropperEndY);
   var ratioX = this.srcImageWidth / tWidth,
     ratioY = this.srcImageHeight / tHeight;
   var srcX = (-tLeft + sX) * ratioX,
@@ -403,7 +387,7 @@ function initCropper(options) {
         // showToolbarElement
         that.showToolbarElement = document.createElement("div");
         that.showToolbarElement.className = "cropper-toolbar-show cropper-toolbar";
-        var showToolbarIcon = that.createIcon({name: "显示工具栏", className: "fa fa-caret-up", action: showToolbar});
+        var showToolbarIcon = that.createIcon({ name: "显示工具栏", className: "fa fa-caret-up", action: showToolbar });
         that.showToolbarElement.appendChild(showToolbarIcon);
         that.showToolbarElement.style.display = "none";
         that.rootElement.appendChild(that.showToolbarElement);
@@ -427,6 +411,7 @@ function initCropper(options) {
     }
     this.sourceImage.src = ele.src;
   }
+  this.actions.setContainerElement(this.containerElement);
   return this.containerElement;
 }
 
@@ -440,8 +425,8 @@ function initCropperStyle() {
     'marginLeft', 'marginTop', 'marginRight', 'marginBottom',
   ];
   var computedStyle = getComputedStyle(root);
-  var newHeight = parseFloat(computedStyle.width) / ratio;
-  console.log(`${computedStyle.width}, ${computedStyle.height}`);
+  var newWidth = parseFloat(computedStyle.width),
+    newHeight = newWidth / ratio;
   for (var k of styles) {
     this.rootElement.style[k] = computedStyle[k];
     this.containerElement.style[k] = computedStyle[k];
@@ -507,6 +492,7 @@ function photoZoom(percent) {
   ele.style.height = newH + "px";
   ele.style.left = -newL + "px";
   ele.style.top = -newT + "px";
+  this.actions.repositionCropper();
 }
 
 function photoZoomOut() {

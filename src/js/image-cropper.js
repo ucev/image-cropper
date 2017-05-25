@@ -10,11 +10,11 @@ class ImageCropper {
   constructor(options) {
     this.actions = new Actions();
     this.actions.setOptions(options);
+    var curState = this.actions.getState();
+    this.initCropper(curState.options);
     this.actions.subscribe(() => {
       this.draw();
     }); 
-    var curState = this.actions.getState();
-    this.initCropper(curState.options);
     window.addEventListener("resize", () => {
       this.onresize();
     })

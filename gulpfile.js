@@ -14,6 +14,7 @@ gulp.task("scripts", function () {
     .bundle()
     .pipe(source("cropper.js"))
     .pipe(gulp.dest("dist/js"))
+    .pipe(gulp.dest('/Users/ucev/Sites/cropper/js'))
 });
 
 
@@ -29,6 +30,7 @@ gulp.task("styles", function () {
   return gulp.src("./src/css/image-cropper.css")
     .pipe(rename("cropper.css"))
     .pipe(gulp.dest("dist/css"))
+    .pipe(gulp.dest("/Users/ucev/Sites/cropper/css"))
 })
 
 gulp.task("styles-prod", function () {

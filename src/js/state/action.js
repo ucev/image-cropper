@@ -7,27 +7,33 @@ class Actions {
     this.store = createStore(reducer);
   }
   clearCropper() {
-    this.store.dispatch({type: "CLEAR_CROPPER"});
+    this.store.dispatch({ type: "CLEAR_CROPPER" });
   }
   cropperBorderEnd() {
-    this.store.dispatch({type: "CROPPER_BORDER_END"});
+    this.store.dispatch({ type: "CROPPER_BORDER_END" });
   }
   cropperBorderMove(x, y) {
-    this.store.dispatch({type: "CROPPER_BORDER_MOVE", x: x, y: y});
+    this.store.dispatch({ type: "CROPPER_BORDER_MOVE", x: x, y: y });
   }
   cropperBorderStart(x, y) {
-    this.store.dispatch({type: "CROPPER_BORDER_START", x: x, y: y});
+    this.store.dispatch({ type: "CROPPER_BORDER_START", x: x, y: y });
   }
   getState() {
     return this.store.getState();
   }
+  setContainerElement(ele) {
+    this.store.dispatch({ type: "SET_CONTAINER_ELEMENT", element: ele });
+  }
   setOptions(options) {
-    this.store.dispatch({type: "SET_OPTIONS", options: options});
+    this.store.dispatch({ type: "SET_OPTIONS", options: options });
   }
   toggleMode(mode, extras = {}) {
     console.log(mode);
     console.log(extras);
-    this.store.dispatch({type: "SET_MODE", mode: mode, extras: extras});
+    this.store.dispatch({ type: "SET_MODE", mode: mode, extras: extras });
+  }
+  repositionCropper() {
+    this.store.dispatch({ type: "REPOSITION_CROPPER" });
   }
   reset() {
     alert("reset");

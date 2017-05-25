@@ -40,8 +40,17 @@ Initialize with `new Cropper` method.
 + Type: Number
 + Default: 0
 Set the aspect ratio of the crop box. By default, the crop box is free ratio.  
-#### element
 
+#### cropperMode
++ Type: String
++ Default: 'none'
++ Options:
+  * border
+  * image
+  * none
+Restrict the cropper to the border, the image, or with no restrictions.
+
+#### element
 + Type: DOMElement(img)
 + Needed: Needed
 Img element to crop

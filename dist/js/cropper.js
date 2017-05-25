@@ -1129,6 +1129,7 @@ function symbolObservablePonyfill(root) {
 
 var defaults = {
   aspectRatio: 0,
+  cropperMode: 'none',
   dragMode: "crop",
   movable: true,
   preview: undefined,
@@ -1188,6 +1189,136 @@ exports.mouseEvents = function (actions) {
 },{}],24:[function(require,module,exports){
 'use strict';
 
+function getBorderRestrict(cropperMode, containerElement) {
+  var bStyle, startX, startY, endX, endY;
+  if (cropperMode == 'border') {
+    bStyle = getComputedStyle(containerElement);
+    startX = 0;
+    startY = 0;
+    endX = parseFloat(bStyle.width);
+    endY = parseFloat(bStyle.height);
+  } else if (cropperMode == 'image') {
+    bStyle = getComputedStyle(containerElement.firstChild);
+    startX = parseFloat(bStyle.left);
+    startY = parseFloat(bStyle.top);
+    endX = startX + parseFloat(bStyle.width);
+    endY = startY + parseFloat(bStyle.height);
+  } else {
+    startX = Number.MIN_VALUE;
+    startY = Number.MIN_VALUE;
+    endX = Number.MAX_VALUE;
+    endY = Number.MAX_VALUE;
+  }
+  return { startX: startX, startY: startY, endX: endX, endY: endY };
+}
+
+function getComputedStyle(ele) {
+  return ele.ownerDocument.defaultView.getComputedStyle(ele);
+}
+
+function getElementOffset(ele) {
+  var offsetLeft = 0,
+      offsetTop = 0;
+  while (ele) {
+    offsetLeft += ele.offsetLeft;
+    offsetTop += ele.offsetTop;
+    ele = ele.offsetParent;
+  }
+  return { left: offsetLeft, top: offsetTop };
+}
+
+function inRange(x, y, cx, cy) {
+  return Math.abs(cx - x) <= 5 && Math.abs(cy - y) <= 5;
+}
+
+function normalizeCoordinateDuringMoveCropper(cropperStartX, cropperStartY, cropperEndX, cropperEndY, cropperMode, containerElement) {
+  var subX = 0,
+      subY = 0;
+  var border = getBorderRestrict(cropperMode, containerElement);
+  if (cropperStartX < border.startX) {
+    subX = cropperStartX - border.startX;
+  }
+  if (cropperStartY < border.startY) {
+    subY = cropperStartY - border.startY;
+  }
+  if (cropperEndX > border.endX) {
+    subX = cropperEndX - border.endX;
+  }
+  if (cropperEndY > border.endY) {
+    subY = cropperEndY - border.endY;
+  }
+  return { cropperStartX: cropperStartX - subX, cropperStartY: cropperStartY - subY, cropperEndX: cropperEndX - subX, cropperEndY: cropperEndY - subY };
+}
+
+function normalizeCoordinateDuringMoveImage(imgStartX, imgStartY, cropperStartX, cropperStartY, cropperEndX, cropperEndY, cropperMode, containerElement) {
+  if (cropperMode == 'image') {
+    var imgStyle = getComputedStyle(containerElement.firstChild),
+        imgEndX = imgStartX + parseFloat(imgStyle.width),
+        imgEndY = imgStartY + parseFloat(imgStyle.height);
+    if (imgStartX > cropperStartX) {
+      imgStartX = cropperStartX;
+    }
+    if (imgStartY > cropperStartY) {
+      imgStartY = cropperStartY;
+    }
+    if (imgEndX < cropperEndX) {
+      imgStartX += cropperEndX - imgEndX;
+    }
+    if (imgEndY < cropperEndY) {
+      imgStartY += cropperEndY - imgEndY;
+    }
+  }
+  return { leftOffset: imgStartX, topOffset: imgStartY };
+}
+
+function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio, cropperMode, containerElement) {
+  var border = getBorderRestrict(cropperMode, containerElement);
+  var cords = { cropperStartX: sx, cropperStartY: sy, cropperEndX: ex, cropperEndY: ey };
+  cords.cropperStartX = Math.min(Math.max(cords.cropperStartX, border.startX), border.endX);
+  cords.cropperEndX = Math.min(Math.max(cords.cropperEndX, border.startX), border.endX);
+  cords.cropperStartY = Math.min(Math.max(cords.cropperStartY, border.startY), border.endY);
+  cords.cropperEndY = Math.min(Math.max(cords.cropperEndY, border.startY), border.endY);
+  if (ratio <= 0) {
+    return cords;
+  }
+  var subX = cords.cropperEndX - cords.cropperStartX,
+      subY = cords.cropperEndY - cords.cropperStartY,
+      positiveX = subX > 0 ? 1 : -1,
+      positiveY = subY > 0 ? 1 : -1;
+  subX = Math.abs(subX), subY = Math.abs(subY);
+  if (subX / ratio <= subY) {
+    subY = subX / ratio;
+    if (ordY == -1) {
+      cords.cropperStartY = cords.cropperEndY - subY * positiveY;
+    } else {
+      cords.cropperEndY = cords.cropperStartY + subY * positiveY;
+    }
+  } else {
+    subX = subY * ratio;
+    if (ordX == -1) {
+      cords.cropperStartX = cords.cropperEndX - subX * positiveX;
+    } else {
+      cords.cropperEndX = cords.cropperStartX + subX * positiveX;
+    }
+  }
+  return cords;
+}
+
+function normalizeCoordinateDuringCrop(sx, sy, ex, ey, ratio, cropperMode, containerElement) {
+  return normalizeCoordinateDuringResize(sx, sy, ex, ey, 0, 0, ratio, cropperMode, containerElement);
+}
+
+exports.getComputedStyle = getComputedStyle;
+exports.getElementOffset = getElementOffset;
+exports.inRange = inRange;
+exports.normalizeCoordinateDuringMoveCropper = normalizeCoordinateDuringMoveCropper;
+exports.normalizeCoordinateDuringMoveImage = normalizeCoordinateDuringMoveImage;
+exports.normalizeCoordinateDuringResize = normalizeCoordinateDuringResize;
+exports.normalizeCoordinateDuringCrop = normalizeCoordinateDuringCrop;
+
+},{}],25:[function(require,module,exports){
+'use strict';
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Actions = require('./state/action');
@@ -1205,11 +1336,11 @@ var ImageCropper = function ImageCropper(options) {
 
   this.actions = new Actions();
   this.actions.setOptions(options);
+  var curState = this.actions.getState();
+  this.initCropper(curState.options);
   this.actions.subscribe(function () {
     _this.draw();
   });
-  var curState = this.actions.getState();
-  this.initCropper(curState.options);
   window.addEventListener("resize", function () {
     _this.onresize();
   });
@@ -1227,8 +1358,8 @@ Object.assign(ImageCropper.prototype, _viewRender);
 
 module.exports = ImageCropper;
 
-},{"./events":23,"./render":25,"./state/action":26}],25:[function(require,module,exports){
-"use strict";
+},{"./events":23,"./render":26,"./state/action":27}],26:[function(require,module,exports){
+'use strict';
 
 /**
  * 
@@ -1249,6 +1380,9 @@ module.exports = ImageCropper;
  *   coverBottomRight, coverBottomCenter, coverBottomLeft, coverLeftCenter, coverCenterCenter; 
  * 
  */
+
+var getComputedStyle = require('./helper').getComputedStyle;
+var getElementOffset = require('./helper').getElementOffset;
 
 var toolbarButtons = {
   movePhoto: {
@@ -1492,16 +1626,12 @@ function drawCovers(startX, startY, endX, endY) {
 }
 
 function drawCropper(x1, y1, x2, y2) {
+  var options = this.actions.getState().options;
   var startX = Math.min(x1, x2);
   var startY = Math.min(y1, y2);
   var endX = Math.max(x1, x2);
   var endY = Math.max(y1, y2);
   if (endY - startY < 10 && endX - startX < 10) return;
-  var offset = getElementOffset(this.containerElement);
-  startX -= offset.left;
-  startY -= offset.top;
-  endX -= offset.left;
-  endY -= offset.top;
   this.drawCovers(startX, startY, endX, endY);
   this.drawHandlers(startX, startY, endX, endY);
 }
@@ -1589,21 +1719,6 @@ function drawPreview(state) {
   this.previewContext.drawImage(this.sourceImage, srcX, srcY, srcWidth, srcHeight, dx, dy, dWidth, dHeight);
 }
 
-function getComputedStyle(ele) {
-  return ele.ownerDocument.defaultView.getComputedStyle(ele);
-}
-
-function getElementOffset(ele) {
-  var offsetLeft = 0,
-      offsetTop = 0;
-  while (ele) {
-    offsetLeft += ele.offsetLeft;
-    offsetTop += ele.offsetTop;
-    ele = ele.offsetParent;
-  }
-  return { left: offsetLeft, top: offsetTop };
-}
-
 function getImage() {
   var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "image/png";
 
@@ -1625,15 +1740,14 @@ function getImage() {
 function getSelectedRect(state) {
   state = state || this.actions.getState();
   var s = getComputedStyle(this.containerElement.firstChild);
-  var offset = getElementOffset(this.containerElement);
   var tWidth = parseInt(s.width);
   var tHeight = parseInt(s.height);
   var tTop = parseInt(s.top) || 0;
   var tLeft = parseInt(s.left) || 0;
-  var sX = Math.min(state.cropperStartX, state.cropperEndX) - offset.left,
-      sY = Math.min(state.cropperStartY, state.cropperEndY) - offset.top,
-      eX = Math.max(state.cropperStartX, state.cropperEndX) - offset.left,
-      eY = Math.max(state.cropperStartY, state.cropperEndY) - offset.top;
+  var sX = Math.min(state.cropperStartX, state.cropperEndX),
+      sY = Math.min(state.cropperStartY, state.cropperEndY),
+      eX = Math.max(state.cropperStartX, state.cropperEndX),
+      eY = Math.max(state.cropperStartY, state.cropperEndY);
   var ratioX = this.srcImageWidth / tWidth,
       ratioY = this.srcImageHeight / tHeight;
   var srcX = (-tLeft + sX) * ratioX,
@@ -1724,6 +1838,7 @@ function initCropper(options) {
     };
     _this.sourceImage.src = ele.src;
   };
+  this.actions.setContainerElement(this.containerElement);
   return this.containerElement;
 }
 
@@ -1734,8 +1849,8 @@ function initCropperStyle() {
   var styles = ['width', /*'height',*/
   'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'marginLeft', 'marginTop', 'marginRight', 'marginBottom'];
   var computedStyle = getComputedStyle(root);
-  var newHeight = parseFloat(computedStyle.width) / ratio;
-  console.log(computedStyle.width + ", " + computedStyle.height);
+  var newWidth = parseFloat(computedStyle.width),
+      newHeight = newWidth / ratio;
   var _iteratorNormalCompletion3 = true;
   var _didIteratorError3 = false;
   var _iteratorError3 = undefined;
@@ -1823,6 +1938,7 @@ function photoZoom(percent) {
   ele.style.height = newH + "px";
   ele.style.left = -newL + "px";
   ele.style.top = -newT + "px";
+  this.actions.repositionCropper();
 }
 
 function photoZoomOut() {
@@ -1905,7 +2021,7 @@ exports.setModeMove = setModeMove;
 exports.showToolbar = showToolbar;
 exports.toggleMode = toggleMode;
 
-},{}],26:[function(require,module,exports){
+},{"./helper":24}],27:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -1949,6 +2065,11 @@ var Actions = function () {
       return this.store.getState();
     }
   }, {
+    key: 'setContainerElement',
+    value: function setContainerElement(ele) {
+      this.store.dispatch({ type: "SET_CONTAINER_ELEMENT", element: ele });
+    }
+  }, {
     key: 'setOptions',
     value: function setOptions(options) {
       this.store.dispatch({ type: "SET_OPTIONS", options: options });
@@ -1961,6 +2082,11 @@ var Actions = function () {
       console.log(mode);
       console.log(extras);
       this.store.dispatch({ type: "SET_MODE", mode: mode, extras: extras });
+    }
+  }, {
+    key: 'repositionCropper',
+    value: function repositionCropper() {
+      this.store.dispatch({ type: "REPOSITION_CROPPER" });
     }
   }, {
     key: 'reset',
@@ -1990,12 +2116,24 @@ var Actions = function () {
 
 module.exports = Actions;
 
-},{"./reducer":27,"redux":17}],27:[function(require,module,exports){
-"use strict";
+},{"./reducer":28,"redux":17}],28:[function(require,module,exports){
+'use strict';
 
 var defaultOptions = require('../defaults');
+
+var getComputedStyle = require('../helper').getComputedStyle;
+var getElementOffset = require('../helper').getElementOffset;
+var inRange = require('../helper').inRange;
+var normalizeCoordinateDuringMoveCropper = require('../helper').normalizeCoordinateDuringMoveCropper;
+var normalizeCoordinateDuringMoveImage = require('../helper').normalizeCoordinateDuringMoveImage;
+var normalizeCoordinateDuringCrop = require('../helper').normalizeCoordinateDuringCrop;
+var normalizeCoordinateDuringResize = require('../helper').normalizeCoordinateDuringResize;
+
 var defaultStates = {
   options: defaultOptions,
+
+  // container element
+  containerElement: null,
 
   // cropper border coordinations
   isCropDown: false,
@@ -2019,41 +2157,181 @@ var defaultStates = {
   rootCursor: "default"
 };
 
-function inRange(x, y, cx, cy) {
-  return Math.abs(cx - x) <= 5 && Math.abs(cy - y) <= 5;
+function cropperBorderEnd(state, action) {
+  if (state.isCropDown) {
+    var sX = Math.min(state.cropperStartX, state.cropperEndX);
+    var sY = Math.min(state.cropperStartY, state.cropperEndY);
+    var eX = Math.max(state.cropperStartX, state.cropperEndX);
+    var eY = Math.max(state.cropperStartY, state.cropperEndY);
+    return Object.assign({}, state, { isCropDown: false, cropperStartX: sX, cropperStartY: sY, cropperEndX: eX, cropperEndY: eY });
+  }if (state.isDragDown) {
+    return Object.assign({}, state, { isDragDown: false, dragTarget: "none" });
+  } else {
+    return Object.assign({}, state);
+  }
 }
 
-function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio) {
-  var cords = { cropperStartX: sx, cropperStartY: sy, cropperEndX: ex, cropperEndY: ey };
-  if (ratio <= 0) {
-    return cords;
-  }
-  var subX = ex - sx;
-  var subY = ey - sy;
-  var positiveX = subX > 0 ? 1 : -1;
-  var positiveY = subY > 0 ? 1 : -1;
-  subX = Math.abs(subX);
-  subY = Math.abs(subY);
-  if (subX / ratio <= subY) {
-    subY = subX / ratio;
-    if (ordY == -1) {
-      cords.cropperStartY = cords.cropperEndY - subY * positiveY;
+function cropperBorderMove(state, action) {
+  if (!state.containerElement) return state;
+  var ele = state.containerElement,
+      cropperMode = state.options.cropperMode;
+  var offset = getElementOffset(state.containerElement);
+  action.x -= offset.left;
+  action.y -= offset.top;
+  if (state.isCropDown) {
+    var cords = normalizeCoordinateDuringCrop(state.cropperStartX, state.cropperStartY, action.x, action.y, state.options.aspectRatio, cropperMode, ele);
+    return Object.assign({}, state, cords);
+  } else if (state.isDragDown) {
+    var subX = state.dragStartX - action.x,
+        subY = state.dragStartY - action.y;
+    var aspectRatio = state.options.aspectRatio;
+    if (state.dragTarget == "cropper") {
+      var cords;
+      switch (state.dragPoint) {
+        case "top-left":
+          cords = normalizeCoordinateDuringResize(state._cropperStartX - subX, state._cropperStartY - subY, state.cropperEndX, state.cropperEndY, -1, -1, aspectRatio, cropperMode, ele);
+          break;
+        case "top-center":
+          //cords = aspectRatio == 0 ? { cropperStartY: state._cropperStartY - subY } : {};
+          cords = normalizeCoordinateDuringResize(state.cropperStartX, state._cropperStartY - subY, state.cropperEndX, state.cropperEndY, 0, -1, aspectRatio, cropperMode, ele);
+          break;
+        case "top-right":
+          cords = normalizeCoordinateDuringResize(state.cropperStartX, state._cropperStartY - subY, state._cropperEndX - subX, state.cropperEndY, 1, -1, aspectRatio, cropperMode, ele);
+          break;
+        case "right-center":
+          //cords = aspectRatio == 0 ? { cropperEndX: state._cropperEndX - subX } : {};
+          cords = normalizeCoordinateDuringResize(state.cropperStartX, state.cropperStartY, state._cropperEndX - subX, state.cropperEndY, 1, 0, aspectRatio, cropperMode, ele);
+          break;
+        case "bottom-right":
+          cords = normalizeCoordinateDuringResize(state.cropperStartX, state.cropperStartY, state._cropperEndX - subX, state._cropperEndY - subY, 1, 1, aspectRatio, cropperMode, ele);
+          break;
+        case "bottom-center":
+          //cords = aspectRatio == 0 ? { cropperEndY: state._cropperEndY - subY } : {};
+          cords = normalizeCoordinateDuringResize(state.cropperStartX, state.cropperStartY, state.cropperEndX, state._cropperEndY - subY, 0, 1, aspectRatio, cropperMode, ele);
+          break;
+        case "bottom-left":
+          cords = normalizeCoordinateDuringResize(state._cropperStartX - subX, state.cropperStartY, state.cropperEndX, state._cropperEndY - subY, -1, 1, aspectRatio, cropperMode, ele);
+          break;
+        case "left-center":
+          //cords = aspectRatio == 0 ? { cropperStartX: state._cropperStartX - subX } : {};
+          cords = normalizeCoordinateDuringResize(state._cropperStartX - subX, state.cropperStartY, state.cropperEndX, state.cropperEndY, -1, 0, aspectRatio, cropperMode, ele);
+          break;
+        default:
+          cords = normalizeCoordinateDuringMoveCropper(state._cropperStartX - subX, state._cropperStartY - subY, state._cropperEndX - subX, state._cropperEndY - subY, cropperMode, ele);
+          break;
+      }
+      return Object.assign({}, state, cords);
+    } else if (state.dragTarget == "image") {
+      var newOffset = normalizeCoordinateDuringMoveImage(state._leftOffset - subX, state._topOffset - subY, state.cropperStartX, state.cropperStartY, state.cropperEndX, state.cropperEndY, cropperMode, ele);
+      return Object.assign({}, state, newOffset);
     } else {
-      cords.cropperEndY = cords.cropperStartY + subY * positiveY;
+      return Object.assign({}, state);
     }
   } else {
-    subX = subY * ratio;
-    if (ordX == -1) {
-      cords.cropperStartX = cords.cropperEndX - subX * positiveX;
+    var obj = {};
+    var x = action.x;
+    var y = action.y;
+    var sX = state.cropperStartX,
+        sY = state.cropperStartY,
+        eX = state.cropperEndX,
+        eY = state.cropperEndY;
+    if (inRange(x, y, sX, sY) || inRange(x, y, eX, eY)) {
+      obj.rootCursor = "nwse-resize";
+    } else if (inRange(x, y, sX, eY) || inRange(x, y, eX, sY)) {
+      obj.rootCursor = "nesw-resize";
+    } else if (inRange(x, y, (sX + eX) / 2, sY) || inRange(x, y, (sX + eX) / 2, eY)) {
+      obj.rootCursor = "ns-resize";
+    } else if (inRange(x, y, sX, (sY + eY) / 2) || inRange(x, y, eX, (sY + eY) / 2)) {
+      obj.rootCursor = "ew-resize";
+    } else if (x > sX && x < eX && y > sY && y < eY) {
+      obj.rootCursor = "move";
     } else {
-      cords.cropperEndX = cords.cropperStartX + subX * positiveX;
+      if (state.dragMode == "move") {
+        obj.rootCursor = "move";
+      } else {
+        obj.rootCursor = "default";
+      }
     }
+    return Object.assign({}, state, obj);
   }
-  return cords;
 }
 
-function normalizeCoordinateDuringCrop(sx, sy, ex, ey, ratio) {
-  return normalizeCoordinateDuringResize(sx, sy, ex, ey, 0, 0, ratio);
+function cropperBorderStart(state, action) {
+  if (!state.containerElement) return state;
+  var offset = getElementOffset(state.containerElement);
+  action.x -= offset.left;
+  action.y -= offset.top;
+  if (state.dragMode == "none") {
+    return Object.assign({}, state, { isCropDown: true, cropperStartX: action.x, cropperStartY: action.y, cropperEndX: action.x, cropperEndY: action.y, dragMode: "crop" });
+  } else {
+    var obj = {};
+    obj.isDragDown = true;
+    obj.dragTarget = "cropper";
+    obj.dragStartX = action.x;
+    obj.dragStartY = action.y;
+    obj._cropperStartX = state.cropperStartX;
+    obj._cropperStartY = state.cropperStartY;
+    obj._cropperEndX = state.cropperEndX;
+    obj._cropperEndY = state.cropperEndY;
+    var x = action.x,
+        y = action.y;
+    var sX = state.cropperStartX,
+        sY = state.cropperStartY,
+        eX = state.cropperEndX,
+        eY = state.cropperEndY;
+    if (inRange(x, y, sX, sY)) {
+      obj.dragPoint = "top-left";
+    } else if (inRange(x, y, (sX + eX) / 2, sY)) {
+      obj.dragPoint = "top-center";
+    } else if (inRange(x, y, eX, sY)) {
+      obj.dragPoint = "top-right";
+    } else if (inRange(x, y, eX, (sY + eY) / 2)) {
+      obj.dragPoint = "right-center";
+    } else if (inRange(x, y, eX, eY)) {
+      obj.dragPoint = "bottom-right";
+    } else if (inRange(x, y, (sX + eX) / 2, eY)) {
+      obj.dragPoint = "bottom-center";
+    } else if (inRange(x, y, sX, eY)) {
+      obj.dragPoint = "bottom-left";
+    } else if (inRange(x, y, sX, (sY + eY) / 2)) {
+      obj.dragPoint = "left-center";
+    } else if (action.x > sX && action.x < eX && action.y > sY && action.y < eY) {
+      obj.dragPoint = "";
+    } else {
+      if (state.dragMode == "crop") {
+        obj.isDragDown = false;
+        obj.dragStartY = -1;
+        obj.dragStartY = -1;
+        obj.dragPoint = "";
+        obj.isCropDown = true;
+        obj.cropperStartX = action.x;
+        obj.cropperStartY = action.y;
+        obj.cropperEndX = action.x;
+        obj.cropperEndY = action.y;
+      } else {
+        obj.isDragDown = true;
+        obj.dragTarget = "image";
+        obj.dragStartX = action.x;
+        obj.dragStartY = action.y;
+        obj._leftOffset = state.leftOffset;
+        obj._topOffset = state.topOffset;
+      }
+    }
+    return Object.assign({}, state, obj);
+  }
+}
+
+function repositionCropper(state) {
+  var imgStyle = getComputedStyle(state.containerElement.firstChild);
+  var imgStartX = parseFloat(imgStyle.left),
+      imgStartY = parseFloat(imgStyle.top),
+      imgEndX = imgStartX + parseFloat(imgStyle.width),
+      imgEndY = imgStartY + parseFloat(imgStyle.height);
+  if (state.cropperStartX >= imgStartX && state.cropperStartX <= imgEndX && state.cropperStartY >= imgStartY && state.cropperStartY <= imgEndY && state.cropperEndX >= imgStartX && state.cropperEndX <= imgEndX && state.cropperEndY >= imgStartY && state.cropperEndY <= imgEndY) {
+    return state;
+  } else {
+    return Object.assign({}, state, { cropperStartX: -1, cropperStartY: -1, cropperEndX: -1, cropperEndY: -1 });
+  }
 }
 
 var reducer = function reducer() {
@@ -2064,148 +2342,15 @@ var reducer = function reducer() {
     case "CLEAR_CROPPER":
       return Object.assign({}, state, { isCropDown: false, cropperStartX: -1, cropperStartY: -1, cropperEndX: -1, cropperEndY: -1, dragMode: "none", rootCursor: "default" });
     case "CROPPER_BORDER_END":
-      if (state.isCropDown) {
-        var sX = Math.min(state.cropperStartX, state.cropperEndX);
-        var sY = Math.min(state.cropperStartY, state.cropperEndY);
-        var eX = Math.max(state.cropperStartX, state.cropperEndX);
-        var eY = Math.max(state.cropperStartY, state.cropperEndY);
-        return Object.assign({}, state, { isCropDown: false, cropperStartX: sX, cropperStartY: sY, cropperEndX: eX, cropperEndY: eY });
-      }if (state.isDragDown) {
-        return Object.assign({}, state, { isDragDown: false, dragTarget: "none" });
-      } else {
-        return Object.assign({}, state);
-      }
+      return cropperBorderEnd(state, action);
     case "CROPPER_BORDER_MOVE":
-      if (state.isCropDown) {
-        var cords = normalizeCoordinateDuringCrop(state.cropperStartX, state.cropperStartY, action.x, action.y, state.options.aspectRatio);
-        return Object.assign({}, state, cords);
-      } else if (state.isDragDown) {
-        var subX = state.dragStartX - action.x;
-        var subY = state.dragStartY - action.y;
-        var aspectRatio = state.options.aspectRatio;
-        if (state.dragTarget == "cropper") {
-          var cords;
-          switch (state.dragPoint) {
-            case "top-left":
-              cords = normalizeCoordinateDuringResize(state._cropperStartX - subX, state._cropperStartY - subY, state.cropperEndX, state.cropperEndY, -1, -1, aspectRatio);
-              break;
-            case "top-center":
-              cords = aspectRatio == 0 ? { cropperStartY: state._cropperStartY - subY } : {};
-              break;
-            case "top-right":
-              cords = normalizeCoordinateDuringResize(state.cropperStartX, state._cropperStartY - subY, state._cropperEndX - subX, state.cropperEndY, 1, -1, aspectRatio);
-              break;
-            case "right-center":
-              cords = aspectRatio == 0 ? { cropperEndX: state._cropperEndX - subX } : {};
-              break;
-            case "bottom-right":
-              cords = normalizeCoordinateDuringResize(state.cropperStartX, state.cropperStartY, state._cropperEndX - subX, state._cropperEndY - subY, 1, 1, aspectRatio);
-              break;
-            case "bottom-center":
-              cords = aspectRatio == 0 ? { cropperEndY: state._cropperEndY - subY } : {};
-              break;
-            case "bottom-left":
-              cords = normalizeCoordinateDuringResize(state._cropperStartX - subX, state.cropperStartY, state.cropperEndX, state._cropperEndY - subY, -1, 1, aspectRatio);
-              break;
-            case "left-center":
-              cords = aspectRatio == 0 ? { cropperStartX: state._cropperStartX - subX } : {};
-              break;
-            default:
-              cords = { cropperStartX: state._cropperStartX - subX, cropperStartY: state._cropperStartY - subY, cropperEndX: state._cropperEndX - subX, cropperEndY: state._cropperEndY - subY };
-              break;
-          }
-          return Object.assign({}, state, cords);
-        } else if (state.dragTarget == "image") {
-          return Object.assign({}, state, { topOffset: state._topOffset - subY, leftOffset: state._leftOffset - subX });
-        } else {
-          return Object.assign({}, state);
-        }
-      } else {
-        var obj = {};
-        var x = action.x;
-        var y = action.y;
-        var sX = state.cropperStartX,
-            sY = state.cropperStartY,
-            eX = state.cropperEndX,
-            eY = state.cropperEndY;
-        if (inRange(x, y, sX, sY) || inRange(x, y, eX, eY)) {
-          obj.rootCursor = "nwse-resize";
-        } else if (inRange(x, y, sX, eY) || inRange(x, y, eX, sY)) {
-          obj.rootCursor = "nesw-resize";
-        } else if (inRange(x, y, (sX + eX) / 2, sY) || inRange(x, y, (sX + eX) / 2, eY)) {
-          obj.rootCursor = "ns-resize";
-        } else if (inRange(x, y, sX, (sY + eY) / 2) || inRange(x, y, eX, (sY + eY) / 2)) {
-          obj.rootCursor = "ew-resize";
-        } else if (x > sX && x < eX && y > sY && y < eY) {
-          obj.rootCursor = "move";
-        } else {
-          if (state.dragMode == "move") {
-            obj.rootCursor = "move";
-          } else {
-            obj.rootCursor = "default";
-          }
-        }
-        return Object.assign({}, state, obj);
-      }
+      return cropperBorderMove(state, action);
     case "CROPPER_BORDER_START":
-      if (state.dragMode == "none") {
-        return Object.assign({}, state, { isCropDown: true, cropperStartX: action.x, cropperStartY: action.y, cropperEndX: action.x, cropperEndY: action.y, dragMode: "crop" });
-      } else {
-        var obj = {};
-        obj.isDragDown = true;
-        obj.dragTarget = "cropper";
-        obj.dragStartX = action.x;
-        obj.dragStartY = action.y;
-        obj._cropperStartX = state.cropperStartX;
-        obj._cropperStartY = state.cropperStartY;
-        obj._cropperEndX = state.cropperEndX;
-        obj._cropperEndY = state.cropperEndY;
-        var x = action.x;
-        var y = action.y;
-        var sX = state.cropperStartX,
-            sY = state.cropperStartY,
-            eX = state.cropperEndX,
-            eY = state.cropperEndY;
-        if (inRange(x, y, sX, sY)) {
-          obj.dragPoint = "top-left";
-        } else if (inRange(x, y, (sX + eX) / 2, sY)) {
-          obj.dragPoint = "top-center";
-        } else if (inRange(x, y, eX, sY)) {
-          obj.dragPoint = "top-right";
-        } else if (inRange(x, y, eX, (sY + eY) / 2)) {
-          obj.dragPoint = "right-center";
-        } else if (inRange(x, y, eX, eY)) {
-          obj.dragPoint = "bottom-right";
-        } else if (inRange(x, y, (sX + eX) / 2, eY)) {
-          obj.dragPoint = "bottom-center";
-        } else if (inRange(x, y, sX, eY)) {
-          obj.dragPoint = "bottom-left";
-        } else if (inRange(x, y, sX, (sY + eY) / 2)) {
-          obj.dragPoint = "left-center";
-        } else if (action.x > sX && action.x < eX && action.y > sY && action.y < eY) {
-          obj.dragPoint = "";
-        } else {
-          if (state.dragMode == "crop") {
-            obj.isDragDown = false;
-            obj.dragStartY = -1;
-            obj.dragStartY = -1;
-            obj.dragPoint = "";
-            obj.isCropDown = true;
-            obj.cropperStartX = action.x;
-            obj.cropperStartY = action.y;
-            obj.cropperEndX = action.x;
-            obj.cropperEndY = action.y;
-          } else {
-            obj.isDragDown = true;
-            obj.dragTarget = "image";
-            obj.dragStartX = action.x;
-            obj.dragStartY = action.y;
-            obj._leftOffset = state.leftOffset;
-            obj._topOffset = state.topOffset;
-          }
-        }
-        return Object.assign({}, state, obj);
-      }
+      return cropperBorderStart(state, action);
+    case "REPOSITION_CROPPER":
+      return repositionCropper(state);
+    case "SET_CONTAINER_ELEMENT":
+      return Object.assign({}, state, { containerElement: action.element });
     case "SET_MODE":
       var obj = {};
       obj.dragMode = action.mode;
@@ -2228,5 +2373,5 @@ var reducer = function reducer() {
 
 module.exports = reducer;
 
-},{"../defaults":22}]},{},[24])(24)
+},{"../defaults":22,"../helper":24}]},{},[25])(25)
 });
