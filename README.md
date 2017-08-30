@@ -39,6 +39,7 @@ Initialize with `new Cropper` method.
 #### aspectRatio
 + Type: Number
 + Default: 0
+
 Set the aspect ratio of the crop box. By default, the crop box is free ratio.  
 
 #### cropperMode
@@ -48,12 +49,14 @@ Set the aspect ratio of the crop box. By default, the crop box is free ratio.
   * border
   * image
   * none
+
 Restrict the cropper to the border, the image, or with no restrictions.
 
 #### element
 + Type: DOMElement(img)
 + Needed: Needed
-Img element to crop
+
+Image element to crop
 
 #### dragMode
 + Type: String
@@ -62,31 +65,37 @@ Img element to crop
   * crop
   * move
   * none
+
 Dragging move of the cropper.
 
 #### movable
 + Type: Boolean
 + Default: true
+
 Enable to move the image.
 
 #### preview
 + Type: DOMElement
 + Needed: Optional
+
 Add extra elements (containers) for previewing.
 
 #### responsive
 + Type: Boolean
 + Default: true
+
 Rerender the cropper when resizing the window.
 
 #### toolbar
 + Type: Boolean
 + Default: true
+
 Whether to display toolbar.
 
 #### zoomable
 + Type: Boolean
 + Default: true
+
 Enable to zoom the image.
 
 ## License
