@@ -1125,12 +1125,12 @@ function symbolObservablePonyfill(root) {
 	return result;
 };
 },{}],22:[function(require,module,exports){
-"use strict";
+'use strict';
 
 var defaults = {
   aspectRatio: 0,
   cropperMode: 'none',
-  dragMode: "crop",
+  dragMode: 'crop',
   movable: true,
   preview: undefined,
   responsive: false,
@@ -1141,10 +1141,9 @@ var defaults = {
 module.exports = defaults;
 
 },{}],23:[function(require,module,exports){
-"use strict";
+'use strict';
 
-//const actions = require('./state/action');
-
+// const actions = require('./state/action');
 
 exports.keyEvents = function (actions) {
   return function (e) {
@@ -1165,18 +1164,18 @@ exports.mouseEvents = function (actions) {
    * 仅仅是鼠标点击事件
    */
   return function mouseEvents(e) {
-    var pageXOffset = window.pageXOffset,
-        pageYOffset = window.pageYOffset;
-    var x = e.clientX + pageXOffset,
-        y = e.clientY + pageYOffset;
+    var pageXOffset = window.pageXOffset;
+    var pageYOffset = window.pageYOffset;
+    var x = e.clientX + pageXOffset;
+    var y = e.clientY + pageYOffset;
     switch (e.type) {
-      case "mousedown":
+      case 'mousedown':
         actions.cropperBorderStart(x, y);
         break;
-      case "mouseup":
+      case 'mouseup':
         actions.cropperBorderEnd();
         break;
-      case "mousemove":
+      case 'mousemove':
         actions.cropperBorderMove(x, y);
         break;
       default:
@@ -1191,13 +1190,13 @@ exports.mouseEvents = function (actions) {
 
 function getBorderRestrict(cropperMode, containerElement) {
   var bStyle, startX, startY, endX, endY;
-  if (cropperMode == 'border') {
+  if (cropperMode === 'border') {
     bStyle = getComputedStyle(containerElement);
     startX = 0;
     startY = 0;
     endX = parseFloat(bStyle.width);
     endY = parseFloat(bStyle.height);
-  } else if (cropperMode == 'image') {
+  } else if (cropperMode === 'image') {
     bStyle = getComputedStyle(containerElement.firstChild);
     startX = parseFloat(bStyle.left);
     startY = parseFloat(bStyle.top);
@@ -1217,8 +1216,8 @@ function getComputedStyle(ele) {
 }
 
 function getElementOffset(ele) {
-  var offsetLeft = 0,
-      offsetTop = 0;
+  var offsetLeft = 0;
+  var offsetTop = 0;
   while (ele) {
     offsetLeft += ele.offsetLeft;
     offsetTop += ele.offsetTop;
@@ -1232,8 +1231,8 @@ function inRange(x, y, cx, cy) {
 }
 
 function normalizeCoordinateDuringMoveCropper(cropperStartX, cropperStartY, cropperEndX, cropperEndY, cropperMode, containerElement) {
-  var subX = 0,
-      subY = 0;
+  var subX = 0;
+  var subY = 0;
   var border = getBorderRestrict(cropperMode, containerElement);
   if (cropperStartX < border.startX) {
     subX = cropperStartX - border.startX;
@@ -1251,10 +1250,10 @@ function normalizeCoordinateDuringMoveCropper(cropperStartX, cropperStartY, crop
 }
 
 function normalizeCoordinateDuringMoveImage(imgStartX, imgStartY, cropperStartX, cropperStartY, cropperEndX, cropperEndY, cropperMode, containerElement) {
-  if (cropperMode == 'image') {
-    var imgStyle = getComputedStyle(containerElement.firstChild),
-        imgEndX = imgStartX + parseFloat(imgStyle.width),
-        imgEndY = imgStartY + parseFloat(imgStyle.height);
+  if (cropperMode === 'image') {
+    var imgStyle = getComputedStyle(containerElement.firstChild);
+    var imgEndX = imgStartX + parseFloat(imgStyle.width);
+    var imgEndY = imgStartY + parseFloat(imgStyle.height);
     if (imgStartX > cropperStartX) {
       imgStartX = cropperStartX;
     }
@@ -1281,21 +1280,22 @@ function normalizeCoordinateDuringResize(sx, sy, ex, ey, ordX, ordY, ratio, crop
   if (ratio <= 0) {
     return cords;
   }
-  var subX = cords.cropperEndX - cords.cropperStartX,
-      subY = cords.cropperEndY - cords.cropperStartY,
-      positiveX = subX > 0 ? 1 : -1,
-      positiveY = subY > 0 ? 1 : -1;
-  subX = Math.abs(subX), subY = Math.abs(subY);
+  var subX = cords.cropperEndX - cords.cropperStartX;
+  var subY = cords.cropperEndY - cords.cropperStartY;
+  var positiveX = subX > 0 ? 1 : -1;
+  var positiveY = subY > 0 ? 1 : -1;
+  subX = Math.abs(subX);
+  subY = Math.abs(subY);
   if (subX / ratio <= subY) {
     subY = subX / ratio;
-    if (ordY == -1) {
+    if (ordY === -1) {
       cords.cropperStartY = cords.cropperEndY - subY * positiveY;
     } else {
       cords.cropperEndY = cords.cropperStartY + subY * positiveY;
     }
   } else {
     subX = subY * ratio;
-    if (ordX == -1) {
+    if (ordX === -1) {
       cords.cropperStartX = cords.cropperEndX - subX * positiveX;
     } else {
       cords.cropperEndX = cords.cropperStartX + subX * positiveX;
@@ -1341,15 +1341,15 @@ var ImageCropper = function ImageCropper(options) {
   this.actions.subscribe(function () {
     _this.draw();
   });
-  window.addEventListener("resize", function () {
+  window.addEventListener('resize', function () {
     _this.onresize();
   });
   var keyEvents = _keyEvents(this.actions);
   var mouseEvents = _mouseEvents(this.actions);
-  window.document.addEventListener("keydown", keyEvents);
-  this.rootElement.addEventListener("mousedown", mouseEvents);
-  this.rootElement.addEventListener("mousemove", mouseEvents);
-  this.rootElement.addEventListener("mouseup", mouseEvents);
+  window.document.addEventListener('keydown', keyEvents);
+  this.rootElement.addEventListener('mousedown', mouseEvents);
+  this.rootElement.addEventListener('mousemove', mouseEvents);
+  this.rootElement.addEventListener('mouseup', mouseEvents);
 };
 
 ;
@@ -1386,41 +1386,41 @@ var getElementOffset = require('./helper').getElementOffset;
 
 var toolbarButtons = {
   movePhoto: {
-    name: "移动图片",
-    className: "fa fa-arrows",
+    name: '移动图片',
+    className: 'fa fa-arrows',
     action: setModeMove,
-    state: "movable"
+    state: 'movable'
   },
   crop: {
-    name: "剪裁",
-    className: "fa fa-crop",
+    name: '剪裁',
+    className: 'fa fa-crop',
     action: setModeCrop
   },
   zoomOut: {
-    name: "放大",
-    className: "fa fa-search-plus",
+    name: '放大',
+    className: 'fa fa-search-plus',
     action: photoZoomOut,
-    state: "zoomable"
+    state: 'zoomable'
   },
   zoomIn: {
-    name: "缩小",
-    className: "fa fa-search-minus",
+    name: '缩小',
+    className: 'fa fa-search-minus',
     action: photoZoomIn,
-    state: "zoomable"
+    state: 'zoomable'
   },
   clear: {
-    name: "清除",
-    className: "fa fa-times",
+    name: '清除',
+    className: 'fa fa-times',
     action: clear
   },
   reset: {
-    name: "重置",
-    className: "fa fa-refresh",
+    name: '重置',
+    className: 'fa fa-refresh',
     action: reset
   },
   hide: {
-    name: "隐藏工具栏",
-    className: "fa fa-caret-down",
+    name: '隐藏工具栏',
+    className: 'fa fa-caret-down',
     action: hideToolbar
   }
 };
@@ -1430,7 +1430,7 @@ function clear() {
 }
 
 function clearCropper() {
-  var handlers = this.containerElement.getElementsByClassName("cropper-handler");
+  var handlers = this.containerElement.getElementsByClassName('cropper-handler');
   handlers = Array.from(handlers);
   var _iteratorNormalCompletion = true;
   var _didIteratorError = false;
@@ -1440,7 +1440,7 @@ function clearCropper() {
     for (var _iterator = handlers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
       var h = _step.value;
 
-      h.style.display = "none";
+      h.style.display = 'none';
     }
   } catch (err) {
     _didIteratorError = true;
@@ -1457,7 +1457,7 @@ function clearCropper() {
     }
   }
 
-  var covers = this.containerElement.getElementsByClassName("cropper-cover");
+  var covers = this.containerElement.getElementsByClassName('cropper-cover');
   covers = Array.from(covers);
   var _iteratorNormalCompletion2 = true;
   var _didIteratorError2 = false;
@@ -1467,7 +1467,7 @@ function clearCropper() {
     for (var _iterator2 = covers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
       var c = _step2.value;
 
-      c.style.display = "none";
+      c.style.display = 'none';
     }
   } catch (err) {
     _didIteratorError2 = true;
@@ -1486,13 +1486,13 @@ function clearCropper() {
 }
 
 function repositionImage() {
-  var container = this.containerElement,
-      ele = container.firstChild,
-      cStyle = getComputedStyle(container),
-      cWidth = parseInt(cStyle.width),
-      cHeight = parseInt(cStyle.height),
-      sWidth = this.srcImageWidth,
-      sHeight = this.srcImageHeight;
+  var container = this.containerElement;
+  var ele = container.firstChild;
+  var cStyle = getComputedStyle(container);
+  var cWidth = parseInt(cStyle.width);
+  var cHeight = parseInt(cStyle.height);
+  var sWidth = this.srcImageWidth;
+  var sHeight = this.srcImageHeight;
   var tWidth, tHeight, tTop, tLeft;
   if (sWidth > sHeight) {
     tWidth = sWidth * cHeight / sHeight;
@@ -1505,10 +1505,10 @@ function repositionImage() {
     tTop = (cHeight - tHeight) / 2;
     tLeft = 0;
   }
-  ele.style.width = tWidth + "px";
-  ele.style.height = tHeight + "px";
-  ele.style.left = tLeft + "px";
-  ele.style.top = tTop + "px";
+  ele.style.width = tWidth + 'px';
+  ele.style.height = tHeight + 'px';
+  ele.style.left = tLeft + 'px';
+  ele.style.top = tTop + 'px';
 }
 
 function reset() {
@@ -1517,21 +1517,21 @@ function reset() {
 }
 
 function createIcon(options) {
-  var ele = document.createElement("a");
+  var ele = document.createElement('a');
   ele.className = options.className;
-  if (typeof options.action == "function") {
+  if (typeof options.action === 'function') {
     var that = this;
-    ele.addEventListener("click", function (e) {
+    ele.addEventListener('click', function (e) {
       options.action.call(that);
       e.stopPropagation();
     });
-    ele.addEventListener("mousedown", function (e) {
+    ele.addEventListener('mousedown', function (e) {
       e.stopPropagation();
     });
-    ele.addEventListener("mouseup", function (e) {
+    ele.addEventListener('mouseup', function (e) {
       e.stopPropagation();
     });
-    ele.addEventListener("mousemove", function (e) {
+    ele.addEventListener('mousemove', function (e) {
       e.stopPropagation();
     });
   }
@@ -1541,22 +1541,22 @@ function createIcon(options) {
 function draw() {
   var state = this.actions.getState();
   this.containerElement.style.cursor = state.rootCursor;
-  if (state.dragTarget == "image") {
+  if (state.dragTarget === 'image') {
     var img = this.containerElement.firstChild;
-    img.style.top = state.topOffset + "px";
-    img.style.left = state.leftOffset + "px";
+    img.style.top = state.topOffset + 'px';
+    img.style.left = state.leftOffset + 'px';
   }
   if (state.options.preview) {
     this.drawPreview(state);
   }
   switch (state.dragMode) {
-    case "crop":
-    case "move":
-      var sX = state.cropperStartX,
-          sY = state.cropperStartY,
-          eX = state.cropperEndX,
-          eY = state.cropperEndY;
-      if (sX == -1 || sY == -1 || eX == -1 || eY == -1) {
+    case 'crop':
+    case 'move':
+      var sX = state.cropperStartX;
+      var sY = state.cropperStartY;
+      var eX = state.cropperEndX;
+      var eY = state.cropperEndY;
+      if (sX === -1 || sY === -1 || eX === -1 || eY === -1) {
         return;
       }
       return this.drawCropper(sX, sY, eX, eY);
@@ -1567,48 +1567,48 @@ function draw() {
 
 function drawCovers(startX, startY, endX, endY) {
   if (!this.coverTopLeft) {
-    this.coverTopLeft = document.createElement("div");
-    this.coverTopLeft.className = "cropper-cover cropper-cover-top-left";
+    this.coverTopLeft = document.createElement('div');
+    this.coverTopLeft.className = 'cropper-cover cropper-cover-top-left';
     this.containerElement.appendChild(this.coverTopLeft);
   }
   if (!this.coverTopCenter) {
-    this.coverTopCenter = document.createElement("div");
-    this.coverTopCenter.className = "cropper-cover cropper-cover-top-center";
+    this.coverTopCenter = document.createElement('div');
+    this.coverTopCenter.className = 'cropper-cover cropper-cover-top-center';
     this.containerElement.appendChild(this.coverTopCenter);
   }
   if (!this.coverTopRight) {
-    this.coverTopRight = document.createElement("div");
-    this.coverTopRight.className = "cropper-cover cropper-cover-top-right";
+    this.coverTopRight = document.createElement('div');
+    this.coverTopRight.className = 'cropper-cover cropper-cover-top-right';
     this.containerElement.appendChild(this.coverTopRight);
   }
   if (!this.coverRightCenter) {
-    this.coverRightCenter = document.createElement("div");
-    this.coverRightCenter.className = "cropper-cover cropper-cover-right-center";
+    this.coverRightCenter = document.createElement('div');
+    this.coverRightCenter.className = 'cropper-cover cropper-cover-right-center';
     this.containerElement.appendChild(this.coverRightCenter);
   }
   if (!this.coverBottomRight) {
-    this.coverBottomRight = document.createElement("div");
-    this.coverBottomRight.className = "cropper-cover cropper-cover-bottom-right";
+    this.coverBottomRight = document.createElement('div');
+    this.coverBottomRight.className = 'cropper-cover cropper-cover-bottom-right';
     this.containerElement.appendChild(this.coverBottomRight);
   }
   if (!this.coverBottomCenter) {
-    this.coverBottomCenter = document.createElement("div");
-    this.coverBottomCenter.className = "cropper-cover cropper-cover-bottom-center";
+    this.coverBottomCenter = document.createElement('div');
+    this.coverBottomCenter.className = 'cropper-cover cropper-cover-bottom-center';
     this.containerElement.appendChild(this.coverBottomCenter);
   }
   if (!this.coverBottomLeft) {
-    this.coverBottomLeft = document.createElement("div");
-    this.coverBottomLeft.className = "cropper-cover cropper-cover-bottom-left";
+    this.coverBottomLeft = document.createElement('div');
+    this.coverBottomLeft.className = 'cropper-cover cropper-cover-bottom-left';
     this.containerElement.appendChild(this.coverBottomLeft);
   }
   if (!this.coverLeftCenter) {
-    this.coverLeftCenter = document.createElement("div");
-    this.coverLeftCenter.className = "cropper-cover cropper-cover-left-center";
+    this.coverLeftCenter = document.createElement('div');
+    this.coverLeftCenter.className = 'cropper-cover cropper-cover-left-center';
     this.containerElement.appendChild(this.coverLeftCenter);
   }
   if (!this.coverCenterCenter) {
-    this.coverCenterCenter = document.createElement("div");
-    this.coverCenterCenter.className = "cropper-cover cropper-cover-center-center";
+    this.coverCenterCenter = document.createElement('div');
+    this.coverCenterCenter.className = 'cropper-cover cropper-cover-center-center';
     this.containerElement.appendChild(this.coverCenterCenter);
   }
   var rect = this.containerElement.getBoundingClientRect();
@@ -1626,7 +1626,6 @@ function drawCovers(startX, startY, endX, endY) {
 }
 
 function drawCropper(x1, y1, x2, y2) {
-  var options = this.actions.getState().options;
   var startX = Math.min(x1, x2);
   var startY = Math.min(y1, y2);
   var endX = Math.max(x1, x2);
@@ -1638,43 +1637,43 @@ function drawCropper(x1, y1, x2, y2) {
 
 function drawHandlers(startX, startY, endX, endY) {
   if (!this.handlerTopLeft) {
-    this.handlerTopLeft = document.createElement("span");
-    this.handlerTopLeft.className = "cropper-handler cropper-handler-top-left";
+    this.handlerTopLeft = document.createElement('span');
+    this.handlerTopLeft.className = 'cropper-handler cropper-handler-top-left';
     this.containerElement.appendChild(this.handlerTopLeft);
   }
   if (!this.handlerTopCenter) {
-    this.handlerTopCenter = document.createElement("span");
-    this.handlerTopCenter.className = "cropper-handler cropper-handler-top-center";
+    this.handlerTopCenter = document.createElement('span');
+    this.handlerTopCenter.className = 'cropper-handler cropper-handler-top-center';
     this.containerElement.appendChild(this.handlerTopCenter);
   }
   if (!this.handlerTopRight) {
-    this.handlerTopRight = document.createElement("span");
-    this.handlerTopRight.className = "cropper-handler cropper-handler-top-right";
+    this.handlerTopRight = document.createElement('span');
+    this.handlerTopRight.className = 'cropper-handler cropper-handler-top-right';
     this.containerElement.appendChild(this.handlerTopRight);
   }
   if (!this.handlerRightCenter) {
-    this.handlerRightCenter = document.createElement("span");
-    this.handlerRightCenter.className = "cropper-handler cropper-handler-right-center";
+    this.handlerRightCenter = document.createElement('span');
+    this.handlerRightCenter.className = 'cropper-handler cropper-handler-right-center';
     this.containerElement.appendChild(this.handlerRightCenter);
   }
   if (!this.handlerBottomRight) {
-    this.handlerBottomRight = document.createElement("span");
-    this.handlerBottomRight.className = "cropper-handler cropper-handler-bottom-right";
+    this.handlerBottomRight = document.createElement('span');
+    this.handlerBottomRight.className = 'cropper-handler cropper-handler-bottom-right';
     this.containerElement.appendChild(this.handlerBottomRight);
   }
   if (!this.handlerBottomCenter) {
-    this.handlerBottomCenter = document.createElement("span");
-    this.handlerBottomCenter.className = "cropper-handler cropper-handler-bottom-center";
+    this.handlerBottomCenter = document.createElement('span');
+    this.handlerBottomCenter.className = 'cropper-handler cropper-handler-bottom-center';
     this.containerElement.appendChild(this.handlerBottomCenter);
   }
   if (!this.handlerBottomLeft) {
-    this.handlerBottomLeft = document.createElement("span");
-    this.handlerBottomLeft.className = "cropper-handler cropper-handler-bottom-left";
+    this.handlerBottomLeft = document.createElement('span');
+    this.handlerBottomLeft.className = 'cropper-handler cropper-handler-bottom-left';
     this.containerElement.appendChild(this.handlerBottomLeft);
   }
   if (!this.handlerLeftCenter) {
-    this.handlerLeftCenter = document.createElement("span");
-    this.handlerLeftCenter.className = "cropper-handler cropper-handler-left-center";
+    this.handlerLeftCenter = document.createElement('span');
+    this.handlerLeftCenter.className = 'cropper-handler cropper-handler-left-center';
     this.containerElement.appendChild(this.handlerLeftCenter);
   }
   setCropperHandlerStyle(this.handlerTopLeft, startY - 2, startX - 2);
@@ -1720,7 +1719,7 @@ function drawPreview(state) {
 }
 
 function getImage() {
-  var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "image/png";
+  var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'image/png';
 
   var _getSelectedRect2 = this.getSelectedRect(),
       srcX = _getSelectedRect2.x,
@@ -1729,10 +1728,10 @@ function getImage() {
       srcHeight = _getSelectedRect2.height;
 
   if (srcWidth <= 10 || srcHeight <= 10) return;
-  var canvas = document.createElement("canvas");
-  canvas.setAttribute("width", srcWidth);
-  canvas.setAttribute("height", srcHeight);
-  var ctx = canvas.getContext("2d");
+  var canvas = document.createElement('canvas');
+  canvas.setAttribute('width', srcWidth);
+  canvas.setAttribute('height', srcHeight);
+  var ctx = canvas.getContext('2d');
   ctx.drawImage(this.sourceImage, srcX, srcY, srcWidth, srcHeight, 0, 0, srcWidth, srcHeight);
   return canvas.toDataURL(type);
 }
@@ -1744,27 +1743,27 @@ function getSelectedRect(state) {
   var tHeight = parseInt(s.height);
   var tTop = parseInt(s.top) || 0;
   var tLeft = parseInt(s.left) || 0;
-  var sX = Math.min(state.cropperStartX, state.cropperEndX),
-      sY = Math.min(state.cropperStartY, state.cropperEndY),
-      eX = Math.max(state.cropperStartX, state.cropperEndX),
-      eY = Math.max(state.cropperStartY, state.cropperEndY);
-  var ratioX = this.srcImageWidth / tWidth,
-      ratioY = this.srcImageHeight / tHeight;
-  var srcX = (-tLeft + sX) * ratioX,
-      srcY = (-tTop + sY) * ratioY,
-      srcWidth = (eX - sX) * ratioX,
-      srcHeight = (eY - sY) * ratioY;
+  var sX = Math.min(state.cropperStartX, state.cropperEndX);
+  var sY = Math.min(state.cropperStartY, state.cropperEndY);
+  var eX = Math.max(state.cropperStartX, state.cropperEndX);
+  var eY = Math.max(state.cropperStartY, state.cropperEndY);
+  var ratioX = this.srcImageWidth / tWidth;
+  var ratioY = this.srcImageHeight / tHeight;
+  var srcX = (-tLeft + sX) * ratioX;
+  var srcY = (-tTop + sY) * ratioY;
+  var srcWidth = (eX - sX) * ratioX;
+  var srcHeight = (eY - sY) * ratioY;
   return { x: srcX, y: srcY, width: srcWidth, height: srcHeight };
 }
 
 function showToolbar() {
-  this.showToolbarElement.style.display = "none";
-  this.toolbarElement.style.display = "inline-block";
+  this.showToolbarElement.style.display = 'none';
+  this.toolbarElement.style.display = 'inline-block';
 }
 
 function hideToolbar() {
-  this.toolbarElement.style.display = "none";
-  this.showToolbarElement.style.display = "inline-block";
+  this.toolbarElement.style.display = 'none';
+  this.showToolbarElement.style.display = 'inline-block';
 }
 
 function initCropper(options) {
@@ -1773,12 +1772,12 @@ function initCropper(options) {
   injectFontAwesome();
   var ele = options.element;
   if (!ele) {
-    throw new Error("没有指定目标节点");
+    throw new Error('没有指定目标节点');
   }
-  this.rootElement = document.createElement("div");
-  this.rootElement.className = "cropper-container";
-  this.containerElement = document.createElement("div");
-  this.containerElement.className = "cropper-img-container";
+  this.rootElement = document.createElement('div');
+  this.rootElement.className = 'cropper-container';
+  this.containerElement = document.createElement('div');
+  this.containerElement.className = 'cropper-img-container';
   var parent = ele.parentNode;
   parent.removeChild(ele);
   this.containerElement.appendChild(ele);
@@ -1796,8 +1795,8 @@ function initCropper(options) {
       //
       that.initCropperStyle();
       if (options.toolbar) {
-        that.toolbarElement = document.createElement("div");
-        that.toolbarElement.className = "cropper-toolbar";
+        that.toolbarElement = document.createElement('div');
+        that.toolbarElement.className = 'cropper-toolbar';
         var iconCnt = 0;
         for (var item in toolbarButtons) {
           if (toolbarButtons[item].state && !options[toolbarButtons[item].state]) {
@@ -1808,32 +1807,31 @@ function initCropper(options) {
         }
         that.rootElement.appendChild(that.toolbarElement);
         // 设置 toolbar 宽度
-        var s = getComputedStyle(that.toolbarElement.firstChild);
         var iconWidth = parseInt(getComputedStyle(that.toolbarElement.firstChild).width);
-        that.toolbarElement.style.width = iconCnt * iconWidth + "px";
+        that.toolbarElement.style.width = iconCnt * iconWidth + 'px';
         // showToolbarElement
-        that.showToolbarElement = document.createElement("div");
-        that.showToolbarElement.className = "cropper-toolbar-show cropper-toolbar";
-        var showToolbarIcon = that.createIcon({ name: "显示工具栏", className: "fa fa-caret-up", action: showToolbar });
+        that.showToolbarElement = document.createElement('div');
+        that.showToolbarElement.className = 'cropper-toolbar-show cropper-toolbar';
+        var showToolbarIcon = that.createIcon({ name: '显示工具栏', className: 'fa fa-caret-up', action: showToolbar });
         that.showToolbarElement.appendChild(showToolbarIcon);
-        that.showToolbarElement.style.display = "none";
+        that.showToolbarElement.style.display = 'none';
         that.rootElement.appendChild(that.showToolbarElement);
       }
       // canvas
-      that.previewCanvas = document.createElement("canvas");
-      that.previewCanvas.className = "cropper-preview-canvas";
+      that.previewCanvas = document.createElement('canvas');
+      that.previewCanvas.className = 'cropper-preview-canvas';
       if (options.preview) {
         options.preview.appendChild(that.previewCanvas);
         var ps = getComputedStyle(options.preview);
         that.previewCanvasWidth = parseInt(ps.width);
         that.previewCanvasHeight = parseInt(ps.height);
       } else {
-        that.previewCanvasWidth = srcImageWidth;
-        that.previewCanvasHeight = srcImageHeight;
+        that.previewCanvasWidth = that.srcImageWidth;
+        that.previewCanvasHeight = that.srcImageHeight;
       }
-      that.previewCanvas.setAttribute("width", that.previewCanvasWidth);
-      that.previewCanvas.setAttribute("height", that.previewCanvasHeight);
-      that.previewContext = that.previewCanvas.getContext("2d");
+      that.previewCanvas.setAttribute('width', that.previewCanvasWidth);
+      that.previewCanvas.setAttribute('height', that.previewCanvasHeight);
+      that.previewContext = that.previewCanvas.getContext('2d');
       that.repositionImage();
     };
     _this.sourceImage.src = ele.src;
@@ -1843,14 +1841,14 @@ function initCropper(options) {
 }
 
 function initCropperStyle() {
-  var root = this.rootElement.parentNode,
-      img = this.containerElement.firstChild,
-      ratio = this.srcImageWidth / this.srcImageHeight;
-  var styles = ['width', /*'height',*/
+  var root = this.rootElement.parentNode;
+  var img = this.containerElement.firstChild;
+  var ratio = this.srcImageWidth / this.srcImageHeight;
+  var styles = ['width', /* 'height', */
   'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'marginLeft', 'marginTop', 'marginRight', 'marginBottom'];
   var computedStyle = getComputedStyle(root);
-  var newWidth = parseFloat(computedStyle.width),
-      newHeight = newWidth / ratio;
+  var newWidth = parseFloat(computedStyle.width);
+  var newHeight = newWidth / ratio;
   var _iteratorNormalCompletion3 = true;
   var _didIteratorError3 = false;
   var _iteratorError3 = undefined;
@@ -1877,12 +1875,12 @@ function initCropperStyle() {
     }
   }
 
-  img.style.position = "absolute";
+  img.style.position = 'absolute';
   img.style.width = this.containerElement.style.width;
-  root.style.height = newHeight + "px";
-  this.rootElement.style.height = newHeight + "px";
-  this.containerElement.style.height = newHeight + "px";
-  img.style.height = newHeight + "px";
+  root.style.height = newHeight + 'px';
+  this.rootElement.style.height = newHeight + 'px';
+  this.containerElement.style.height = newHeight + 'px';
+  img.style.height = newHeight + 'px';
   this.repositionImage();
 }
 
@@ -1893,16 +1891,16 @@ function injectFontAwesome() {
     if (!styleSheets[i].href) {
       continue;
     }
-    if (styleSheets[i].href.indexOf("font-awesome") > -1) {
+    if (styleSheets[i].href.indexOf('font-awesome') > -1) {
       inject = false;
       break;
     }
   }
   if (inject) {
-    var link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css";
-    document.getElementsByTagName("head")[0].appendChild(link);
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css';
+    document.getElementsByTagName('head')[0].appendChild(link);
   }
 }
 
@@ -1914,7 +1912,7 @@ function onresize() {
 function photoZoom(percent) {
   var state = this.actions.getState();
   if (!state.options.zoomable) {
-    throw new Error("The photo is unzommable");
+    throw new Error('The photo is unzommable');
   }
   var ele = this.containerElement.firstChild;
   var cs = getComputedStyle(this.containerElement);
@@ -1934,10 +1932,10 @@ function photoZoom(percent) {
   }
   var newL = newW * (cx / ew) - cw / 2;
   var newT = newH * (cy / eh) - ch / 2;
-  ele.style.width = newW + "px";
-  ele.style.height = newH + "px";
-  ele.style.left = -newL + "px";
-  ele.style.top = -newT + "px";
+  ele.style.width = newW + 'px';
+  ele.style.height = newH + 'px';
+  ele.style.left = -newL + 'px';
+  ele.style.top = -newT + 'px';
   this.actions.repositionCropper();
 }
 
@@ -1949,46 +1947,34 @@ function photoZoomIn() {
   this.photoZoom(-0.1);
 }
 
-function setCropperBorderStyle(border, top, left, width, height) {
-  border.style.top = top + "px";
-  border.style.left = left + "px";
-  if (width) {
-    border.style.width = width + "px";
-  }
-  if (height) {
-    border.style.height = height + "px";
-  }
-  border.style.display = "block";
-}
-
 function setCropperCoverStyle(cover, top, left, width, height) {
-  cover.style.top = top + "px";
-  cover.style.left = left + "px";
-  cover.style.width = width + "px";
-  cover.style.height = height + "px";
-  cover.style.display = "block";
+  cover.style.top = top + 'px';
+  cover.style.left = left + 'px';
+  cover.style.width = width + 'px';
+  cover.style.height = height + 'px';
+  cover.style.display = 'block';
 }
 
 function setCropperHandlerStyle(handler, top, left) {
-  handler.style.top = top + "px";
-  handler.style.left = left + "px";
-  handler.style.display = "block";
+  handler.style.top = top + 'px';
+  handler.style.left = left + 'px';
+  handler.style.display = 'block';
 }
 
 function setModeCrop() {
-  this.toggleMode("crop");
+  this.toggleMode('crop');
 }
 
 function setModeMove() {
   var state = this.actions.getState();
   if (!state.options.movable) {
-    throw new Error("The cropper is unmovable");
+    throw new Error('The cropper is unmovable');
   }
   var img = this.containerElement.firstChild;
   var s = getComputedStyle(img);
   var top = parseInt(s.top) || 0;
   var left = parseInt(s.left) || 0;
-  this.toggleMode("move", { top: top, left: left });
+  this.toggleMode('move', { top: top, left: left });
 }
 
 function toggleMode(mode) {
@@ -2042,22 +2028,22 @@ var Actions = function () {
   _createClass(Actions, [{
     key: 'clearCropper',
     value: function clearCropper() {
-      this.store.dispatch({ type: "CLEAR_CROPPER" });
+      this.store.dispatch({ type: 'CLEAR_CROPPER' });
     }
   }, {
     key: 'cropperBorderEnd',
     value: function cropperBorderEnd() {
-      this.store.dispatch({ type: "CROPPER_BORDER_END" });
+      this.store.dispatch({ type: 'CROPPER_BORDER_END' });
     }
   }, {
     key: 'cropperBorderMove',
     value: function cropperBorderMove(x, y) {
-      this.store.dispatch({ type: "CROPPER_BORDER_MOVE", x: x, y: y });
+      this.store.dispatch({ type: 'CROPPER_BORDER_MOVE', x: x, y: y });
     }
   }, {
     key: 'cropperBorderStart',
     value: function cropperBorderStart(x, y) {
-      this.store.dispatch({ type: "CROPPER_BORDER_START", x: x, y: y });
+      this.store.dispatch({ type: 'CROPPER_BORDER_START', x: x, y: y });
     }
   }, {
     key: 'getState',
@@ -2067,12 +2053,12 @@ var Actions = function () {
   }, {
     key: 'setContainerElement',
     value: function setContainerElement(ele) {
-      this.store.dispatch({ type: "SET_CONTAINER_ELEMENT", element: ele });
+      this.store.dispatch({ type: 'SET_CONTAINER_ELEMENT', element: ele });
     }
   }, {
     key: 'setOptions',
     value: function setOptions(options) {
-      this.store.dispatch({ type: "SET_OPTIONS", options: options });
+      this.store.dispatch({ type: 'SET_OPTIONS', options: options });
     }
   }, {
     key: 'toggleMode',
@@ -2081,17 +2067,17 @@ var Actions = function () {
 
       console.log(mode);
       console.log(extras);
-      this.store.dispatch({ type: "SET_MODE", mode: mode, extras: extras });
+      this.store.dispatch({ type: 'SET_MODE', mode: mode, extras: extras });
     }
   }, {
     key: 'repositionCropper',
     value: function repositionCropper() {
-      this.store.dispatch({ type: "REPOSITION_CROPPER" });
+      this.store.dispatch({ type: 'REPOSITION_CROPPER' });
     }
   }, {
     key: 'reset',
     value: function reset() {
-      alert("reset");
+      alert('reset');
     }
   }, {
     key: 'subscribe',
@@ -2144,17 +2130,17 @@ var defaultStates = {
   // drag point
   isDragDown: false,
   // ['top-left', 'top-center', 'top-right', 'right-center', 'bottom-right', 'bottom-center', 'bottom-left', 'left-center']
-  dragPoint: "",
+  dragPoint: '',
   // ['image', 'cropper', 'none']
-  dragTraget: "none",
+  dragTraget: 'none',
   dragStartX: -1,
   dragStartY: -1,
   topOffset: -1,
   leftOffset: -1,
   // cropper point move mode: ["crop", "move", "none"], default "none"
-  dragMode: "none",
+  dragMode: 'none',
   //
-  rootCursor: "default"
+  rootCursor: 'default'
 };
 
 function cropperBorderEnd(state, action) {
@@ -2165,7 +2151,7 @@ function cropperBorderEnd(state, action) {
     var eY = Math.max(state.cropperStartY, state.cropperEndY);
     return Object.assign({}, state, { isCropDown: false, cropperStartX: sX, cropperStartY: sY, cropperEndX: eX, cropperEndY: eY });
   }if (state.isDragDown) {
-    return Object.assign({}, state, { isDragDown: false, dragTarget: "none" });
+    return Object.assign({}, state, { isDragDown: false, dragTarget: 'none' });
   } else {
     return Object.assign({}, state);
   }
@@ -2173,47 +2159,47 @@ function cropperBorderEnd(state, action) {
 
 function cropperBorderMove(state, action) {
   if (!state.containerElement) return state;
-  var ele = state.containerElement,
-      cropperMode = state.options.cropperMode;
+  var ele = state.containerElement;
+  var cropperMode = state.options.cropperMode;
   var offset = getElementOffset(state.containerElement);
   action.x -= offset.left;
   action.y -= offset.top;
+  var cords;
   if (state.isCropDown) {
-    var cords = normalizeCoordinateDuringCrop(state.cropperStartX, state.cropperStartY, action.x, action.y, state.options.aspectRatio, cropperMode, ele);
+    cords = normalizeCoordinateDuringCrop(state.cropperStartX, state.cropperStartY, action.x, action.y, state.options.aspectRatio, cropperMode, ele);
     return Object.assign({}, state, cords);
   } else if (state.isDragDown) {
-    var subX = state.dragStartX - action.x,
-        subY = state.dragStartY - action.y;
+    var subX = state.dragStartX - action.x;
+    var subY = state.dragStartY - action.y;
     var aspectRatio = state.options.aspectRatio;
-    if (state.dragTarget == "cropper") {
-      var cords;
+    if (state.dragTarget === 'cropper') {
       switch (state.dragPoint) {
-        case "top-left":
+        case 'top-left':
           cords = normalizeCoordinateDuringResize(state._cropperStartX - subX, state._cropperStartY - subY, state.cropperEndX, state.cropperEndY, -1, -1, aspectRatio, cropperMode, ele);
           break;
-        case "top-center":
-          //cords = aspectRatio == 0 ? { cropperStartY: state._cropperStartY - subY } : {};
+        case 'top-center':
+          // cords = aspectRatio == 0 ? { cropperStartY: state._cropperStartY - subY } : {};
           cords = normalizeCoordinateDuringResize(state.cropperStartX, state._cropperStartY - subY, state.cropperEndX, state.cropperEndY, 0, -1, aspectRatio, cropperMode, ele);
           break;
-        case "top-right":
+        case 'top-right':
           cords = normalizeCoordinateDuringResize(state.cropperStartX, state._cropperStartY - subY, state._cropperEndX - subX, state.cropperEndY, 1, -1, aspectRatio, cropperMode, ele);
           break;
-        case "right-center":
-          //cords = aspectRatio == 0 ? { cropperEndX: state._cropperEndX - subX } : {};
+        case 'right-center':
+          // cords = aspectRatio == 0 ? { cropperEndX: state._cropperEndX - subX } : {};
           cords = normalizeCoordinateDuringResize(state.cropperStartX, state.cropperStartY, state._cropperEndX - subX, state.cropperEndY, 1, 0, aspectRatio, cropperMode, ele);
           break;
-        case "bottom-right":
+        case 'bottom-right':
           cords = normalizeCoordinateDuringResize(state.cropperStartX, state.cropperStartY, state._cropperEndX - subX, state._cropperEndY - subY, 1, 1, aspectRatio, cropperMode, ele);
           break;
-        case "bottom-center":
-          //cords = aspectRatio == 0 ? { cropperEndY: state._cropperEndY - subY } : {};
+        case 'bottom-center':
+          // cords = aspectRatio == 0 ? { cropperEndY: state._cropperEndY - subY } : {};
           cords = normalizeCoordinateDuringResize(state.cropperStartX, state.cropperStartY, state.cropperEndX, state._cropperEndY - subY, 0, 1, aspectRatio, cropperMode, ele);
           break;
-        case "bottom-left":
+        case 'bottom-left':
           cords = normalizeCoordinateDuringResize(state._cropperStartX - subX, state.cropperStartY, state.cropperEndX, state._cropperEndY - subY, -1, 1, aspectRatio, cropperMode, ele);
           break;
-        case "left-center":
-          //cords = aspectRatio == 0 ? { cropperStartX: state._cropperStartX - subX } : {};
+        case 'left-center':
+          // cords = aspectRatio == 0 ? { cropperStartX: state._cropperStartX - subX } : {};
           cords = normalizeCoordinateDuringResize(state._cropperStartX - subX, state.cropperStartY, state.cropperEndX, state.cropperEndY, -1, 0, aspectRatio, cropperMode, ele);
           break;
         default:
@@ -2221,7 +2207,7 @@ function cropperBorderMove(state, action) {
           break;
       }
       return Object.assign({}, state, cords);
-    } else if (state.dragTarget == "image") {
+    } else if (state.dragTarget === 'image') {
       var newOffset = normalizeCoordinateDuringMoveImage(state._leftOffset - subX, state._topOffset - subY, state.cropperStartX, state.cropperStartY, state.cropperEndX, state.cropperEndY, cropperMode, ele);
       return Object.assign({}, state, newOffset);
     } else {
@@ -2231,25 +2217,25 @@ function cropperBorderMove(state, action) {
     var obj = {};
     var x = action.x;
     var y = action.y;
-    var sX = state.cropperStartX,
-        sY = state.cropperStartY,
-        eX = state.cropperEndX,
-        eY = state.cropperEndY;
+    var sX = state.cropperStartX;
+    var sY = state.cropperStartY;
+    var eX = state.cropperEndX;
+    var eY = state.cropperEndY;
     if (inRange(x, y, sX, sY) || inRange(x, y, eX, eY)) {
-      obj.rootCursor = "nwse-resize";
+      obj.rootCursor = 'nwse-resize';
     } else if (inRange(x, y, sX, eY) || inRange(x, y, eX, sY)) {
-      obj.rootCursor = "nesw-resize";
+      obj.rootCursor = 'nesw-resize';
     } else if (inRange(x, y, (sX + eX) / 2, sY) || inRange(x, y, (sX + eX) / 2, eY)) {
-      obj.rootCursor = "ns-resize";
+      obj.rootCursor = 'ns-resize';
     } else if (inRange(x, y, sX, (sY + eY) / 2) || inRange(x, y, eX, (sY + eY) / 2)) {
-      obj.rootCursor = "ew-resize";
+      obj.rootCursor = 'ew-resize';
     } else if (x > sX && x < eX && y > sY && y < eY) {
-      obj.rootCursor = "move";
+      obj.rootCursor = 'move';
     } else {
-      if (state.dragMode == "move") {
-        obj.rootCursor = "move";
+      if (state.dragMode === 'move') {
+        obj.rootCursor = 'move';
       } else {
-        obj.rootCursor = "default";
+        obj.rootCursor = 'default';
       }
     }
     return Object.assign({}, state, obj);
@@ -2261,48 +2247,48 @@ function cropperBorderStart(state, action) {
   var offset = getElementOffset(state.containerElement);
   action.x -= offset.left;
   action.y -= offset.top;
-  if (state.dragMode == "none") {
-    return Object.assign({}, state, { isCropDown: true, cropperStartX: action.x, cropperStartY: action.y, cropperEndX: action.x, cropperEndY: action.y, dragMode: "crop" });
+  if (state.dragMode === 'none') {
+    return Object.assign({}, state, { isCropDown: true, cropperStartX: action.x, cropperStartY: action.y, cropperEndX: action.x, cropperEndY: action.y, dragMode: 'crop' });
   } else {
     var obj = {};
     obj.isDragDown = true;
-    obj.dragTarget = "cropper";
+    obj.dragTarget = 'cropper';
     obj.dragStartX = action.x;
     obj.dragStartY = action.y;
     obj._cropperStartX = state.cropperStartX;
     obj._cropperStartY = state.cropperStartY;
     obj._cropperEndX = state.cropperEndX;
     obj._cropperEndY = state.cropperEndY;
-    var x = action.x,
-        y = action.y;
-    var sX = state.cropperStartX,
-        sY = state.cropperStartY,
-        eX = state.cropperEndX,
-        eY = state.cropperEndY;
+    var x = action.x;
+    var y = action.y;
+    var sX = state.cropperStartX;
+    var sY = state.cropperStartY;
+    var eX = state.cropperEndX;
+    var eY = state.cropperEndY;
     if (inRange(x, y, sX, sY)) {
-      obj.dragPoint = "top-left";
+      obj.dragPoint = 'top-left';
     } else if (inRange(x, y, (sX + eX) / 2, sY)) {
-      obj.dragPoint = "top-center";
+      obj.dragPoint = 'top-center';
     } else if (inRange(x, y, eX, sY)) {
-      obj.dragPoint = "top-right";
+      obj.dragPoint = 'top-right';
     } else if (inRange(x, y, eX, (sY + eY) / 2)) {
-      obj.dragPoint = "right-center";
+      obj.dragPoint = 'right-center';
     } else if (inRange(x, y, eX, eY)) {
-      obj.dragPoint = "bottom-right";
+      obj.dragPoint = 'bottom-right';
     } else if (inRange(x, y, (sX + eX) / 2, eY)) {
-      obj.dragPoint = "bottom-center";
+      obj.dragPoint = 'bottom-center';
     } else if (inRange(x, y, sX, eY)) {
-      obj.dragPoint = "bottom-left";
+      obj.dragPoint = 'bottom-left';
     } else if (inRange(x, y, sX, (sY + eY) / 2)) {
-      obj.dragPoint = "left-center";
+      obj.dragPoint = 'left-center';
     } else if (action.x > sX && action.x < eX && action.y > sY && action.y < eY) {
-      obj.dragPoint = "";
+      obj.dragPoint = '';
     } else {
-      if (state.dragMode == "crop") {
+      if (state.dragMode === 'crop') {
         obj.isDragDown = false;
         obj.dragStartY = -1;
         obj.dragStartY = -1;
-        obj.dragPoint = "";
+        obj.dragPoint = '';
         obj.isCropDown = true;
         obj.cropperStartX = action.x;
         obj.cropperStartY = action.y;
@@ -2310,7 +2296,7 @@ function cropperBorderStart(state, action) {
         obj.cropperEndY = action.y;
       } else {
         obj.isDragDown = true;
-        obj.dragTarget = "image";
+        obj.dragTarget = 'image';
         obj.dragStartX = action.x;
         obj.dragStartY = action.y;
         obj._leftOffset = state.leftOffset;
@@ -2323,10 +2309,10 @@ function cropperBorderStart(state, action) {
 
 function repositionCropper(state) {
   var imgStyle = getComputedStyle(state.containerElement.firstChild);
-  var imgStartX = parseFloat(imgStyle.left),
-      imgStartY = parseFloat(imgStyle.top),
-      imgEndX = imgStartX + parseFloat(imgStyle.width),
-      imgEndY = imgStartY + parseFloat(imgStyle.height);
+  var imgStartX = parseFloat(imgStyle.left);
+  var imgStartY = parseFloat(imgStyle.top);
+  var imgEndX = imgStartX + parseFloat(imgStyle.width);
+  var imgEndY = imgStartY + parseFloat(imgStyle.height);
   if (state.cropperStartX >= imgStartX && state.cropperStartX <= imgEndX && state.cropperStartY >= imgStartY && state.cropperStartY <= imgEndY && state.cropperEndX >= imgStartX && state.cropperEndX <= imgEndX && state.cropperEndY >= imgStartY && state.cropperEndY <= imgEndY) {
     return state;
   } else {
@@ -2339,31 +2325,31 @@ var reducer = function reducer() {
   var action = arguments[1];
 
   switch (action.type) {
-    case "CLEAR_CROPPER":
-      return Object.assign({}, state, { isCropDown: false, cropperStartX: -1, cropperStartY: -1, cropperEndX: -1, cropperEndY: -1, dragMode: "none", rootCursor: "default" });
-    case "CROPPER_BORDER_END":
+    case 'CLEAR_CROPPER':
+      return Object.assign({}, state, { isCropDown: false, cropperStartX: -1, cropperStartY: -1, cropperEndX: -1, cropperEndY: -1, dragMode: 'none', rootCursor: 'default' });
+    case 'CROPPER_BORDER_END':
       return cropperBorderEnd(state, action);
-    case "CROPPER_BORDER_MOVE":
+    case 'CROPPER_BORDER_MOVE':
       return cropperBorderMove(state, action);
-    case "CROPPER_BORDER_START":
+    case 'CROPPER_BORDER_START':
       return cropperBorderStart(state, action);
-    case "REPOSITION_CROPPER":
+    case 'REPOSITION_CROPPER':
       return repositionCropper(state);
-    case "SET_CONTAINER_ELEMENT":
+    case 'SET_CONTAINER_ELEMENT':
       return Object.assign({}, state, { containerElement: action.element });
-    case "SET_MODE":
+    case 'SET_MODE':
       var obj = {};
       obj.dragMode = action.mode;
       var extras = action.extras;
-      if (obj.dragMode == 'move') {
-        obj.rootCursor = "move";
+      if (obj.dragMode === 'move') {
+        obj.rootCursor = 'move';
         obj.topOffset = extras.top;
         obj.leftOffset = extras.left;
       } else {
-        obj.rootCursor = "default";
+        obj.rootCursor = 'default';
       }
       return Object.assign({}, state, obj);
-    case "SET_OPTIONS":
+    case 'SET_OPTIONS':
       var newOptions = Object.assign({}, state.options, action.options);
       return Object.assign({}, state, { options: newOptions, dragMode: newOptions.dragMode || state.dragMode });
     default:

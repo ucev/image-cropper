@@ -1,53 +1,53 @@
-const createStore = require('redux').createStore;
-const reducer = require('./reducer');
+const createStore = require('redux').createStore
+const reducer = require('./reducer')
 
 class Actions {
-  constructor() {
-    this.__unsubscribe = undefined;
-    this.store = createStore(reducer);
+  constructor () {
+    this.__unsubscribe = undefined
+    this.store = createStore(reducer)
   }
-  clearCropper() {
-    this.store.dispatch({ type: "CLEAR_CROPPER" });
+  clearCropper () {
+    this.store.dispatch({ type: 'CLEAR_CROPPER' })
   }
-  cropperBorderEnd() {
-    this.store.dispatch({ type: "CROPPER_BORDER_END" });
+  cropperBorderEnd () {
+    this.store.dispatch({ type: 'CROPPER_BORDER_END' })
   }
-  cropperBorderMove(x, y) {
-    this.store.dispatch({ type: "CROPPER_BORDER_MOVE", x: x, y: y });
+  cropperBorderMove (x, y) {
+    this.store.dispatch({ type: 'CROPPER_BORDER_MOVE', x: x, y: y })
   }
-  cropperBorderStart(x, y) {
-    this.store.dispatch({ type: "CROPPER_BORDER_START", x: x, y: y });
+  cropperBorderStart (x, y) {
+    this.store.dispatch({ type: 'CROPPER_BORDER_START', x: x, y: y })
   }
-  getState() {
-    return this.store.getState();
+  getState () {
+    return this.store.getState()
   }
-  setContainerElement(ele) {
-    this.store.dispatch({ type: "SET_CONTAINER_ELEMENT", element: ele });
+  setContainerElement (ele) {
+    this.store.dispatch({ type: 'SET_CONTAINER_ELEMENT', element: ele })
   }
-  setOptions(options) {
-    this.store.dispatch({ type: "SET_OPTIONS", options: options });
+  setOptions (options) {
+    this.store.dispatch({ type: 'SET_OPTIONS', options: options })
   }
-  toggleMode(mode, extras = {}) {
-    console.log(mode);
-    console.log(extras);
-    this.store.dispatch({ type: "SET_MODE", mode: mode, extras: extras });
+  toggleMode (mode, extras = {}) {
+    console.log(mode)
+    console.log(extras)
+    this.store.dispatch({ type: 'SET_MODE', mode: mode, extras: extras })
   }
-  repositionCropper() {
-    this.store.dispatch({ type: "REPOSITION_CROPPER" });
+  repositionCropper () {
+    this.store.dispatch({ type: 'REPOSITION_CROPPER' })
   }
-  reset() {
-    alert("reset");
+  reset () {
+    alert('reset')
   }
-  subscribe(updateFunc) {
-    this.unsubscribe();
-    this.__unsubscribe = this.store.subscribe(updateFunc);
+  subscribe (updateFunc) {
+    this.unsubscribe()
+    this.__unsubscribe = this.store.subscribe(updateFunc)
   }
-  unsubscribe() {
+  unsubscribe () {
     if (this.__unsubscribe) {
-      this.__unsubscribe();
-      this.__unsubscribe = undefined;
+      this.__unsubscribe()
+      this.__unsubscribe = undefined
     }
   }
 };
 
-module.exports = Actions;
+module.exports = Actions

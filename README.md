@@ -9,28 +9,28 @@ npm install --save imagecropper
 ```
 
 ### Installation
-Include files:  
+Include files:
 ```
 <link rel="stylesheet" type="text/css" href="/path/to/cropper.css"/>
 <script src="/path/to/cropper.js"></script>
 ```
 
 ### Usage
-Initialize with `new Cropper` method.  
+Initialize with `new Cropper` method.
 ```
 <!-- Wrap the image or canvas element with a block element (container) -->
 <div>
-  <img id="image" src="picture.jpg">
+  <img id="image" src="picture.jpg" />
 </div>
 <div id="preview"></div>
 ```
 
 ```
   var cropper = new Cropper({
-    ele: getElementById("image"),
-    toolbar: true, 
+    element: document.getElementById("image"),
+    toolbar: true,
     aspectRatio: 1,
-    preview: getElementById("preview")
+    preview: document.getElementById("preview")
   })
 ```
 
@@ -40,7 +40,7 @@ Initialize with `new Cropper` method.
 + Type: Number
 + Default: 0
 
-Set the aspect ratio of the crop box. By default, the crop box is free ratio.  
+Set the aspect ratio of the crop box. By default, the crop box is free ratio.
 
 #### cropperMode
 + Type: String
@@ -61,7 +61,7 @@ Image element to crop
 #### dragMode
 + Type: String
 + Default: 'crop'
-+ Options:  
++ Options:
   * crop
   * move
   * none
@@ -97,6 +97,17 @@ Whether to display toolbar.
 + Default: true
 
 Enable to zoom the image.
+
+### Methods
+
+#### getImage
+##### Parameters
++ type: A String indicating the image format. The default format type is image/png
+##### Return value
+return cropped-image data encoded into base64
+```
+var image = cropper.getImage()
+```
 
 ## License
 [MIT](https://opensource.org/licenses/MIT) &copy; [ucev](https://github.com/ucev)
