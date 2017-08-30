@@ -8,6 +8,7 @@ const concat = require('gulp-concat');
 const minifyCss = require('gulp-minify-css');
 
 gulp.task("scripts", function () {
+  process.env.NODE_ENV = 'production'
   return browserify("./src/js/image-cropper.js", {
     standalone: "Cropper"
   }).transform("babelify", { presets: ["es2015"] })

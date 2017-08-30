@@ -248,192 +248,6 @@ function isPlainObject(value) {
 module.exports = isPlainObject;
 
 },{"./_baseGetTag":2,"./_getPrototype":4,"./isObjectLike":9}],11:[function(require,module,exports){
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],12:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -492,7 +306,7 @@ function applyMiddleware() {
     };
   };
 }
-},{"./compose":15}],13:[function(require,module,exports){
+},{"./compose":14}],12:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -544,8 +358,7 @@ function bindActionCreators(actionCreators, dispatch) {
   }
   return boundActionCreators;
 }
-},{}],14:[function(require,module,exports){
-(function (process){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -633,7 +446,7 @@ function combineReducers(reducers) {
   for (var i = 0; i < reducerKeys.length; i++) {
     var key = reducerKeys[i];
 
-    if (process.env.NODE_ENV !== 'production') {
+    if ("production" !== 'production') {
       if (typeof reducers[key] === 'undefined') {
         (0, _warning2['default'])('No reducer provided for key "' + key + '"');
       }
@@ -645,7 +458,7 @@ function combineReducers(reducers) {
   }
   var finalReducerKeys = Object.keys(finalReducers);
 
-  if (process.env.NODE_ENV !== 'production') {
+  if ("production" !== 'production') {
     var unexpectedKeyCache = {};
   }
 
@@ -664,7 +477,7 @@ function combineReducers(reducers) {
       throw sanityError;
     }
 
-    if (process.env.NODE_ENV !== 'production') {
+    if ("production" !== 'production') {
       var warningMessage = getUnexpectedStateShapeWarningMessage(state, finalReducers, action, unexpectedKeyCache);
       if (warningMessage) {
         (0, _warning2['default'])(warningMessage);
@@ -688,8 +501,7 @@ function combineReducers(reducers) {
     return hasChanged ? nextState : state;
   };
 }
-}).call(this,require('_process'))
-},{"./createStore":16,"./utils/warning":18,"_process":11,"lodash/isPlainObject":10}],15:[function(require,module,exports){
+},{"./createStore":15,"./utils/warning":17,"lodash/isPlainObject":10}],14:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -728,7 +540,7 @@ function compose() {
     }, last.apply(undefined, arguments));
   };
 }
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -990,8 +802,7 @@ function createStore(reducer, preloadedState, enhancer) {
     replaceReducer: replaceReducer
   }, _ref2[_symbolObservable2['default']] = observable, _ref2;
 }
-},{"lodash/isPlainObject":10,"symbol-observable":19}],17:[function(require,module,exports){
-(function (process){
+},{"lodash/isPlainObject":10,"symbol-observable":18}],16:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -1029,7 +840,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 */
 function isCrushed() {}
 
-if (process.env.NODE_ENV !== 'production' && typeof isCrushed.name === 'string' && isCrushed.name !== 'isCrushed') {
+if ("production" !== 'production' && typeof isCrushed.name === 'string' && isCrushed.name !== 'isCrushed') {
   (0, _warning2['default'])('You are currently using minified code outside of NODE_ENV === \'production\'. ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' + 'to ensure you have the correct code for your production build.');
 }
 
@@ -1038,8 +849,7 @@ exports.combineReducers = _combineReducers2['default'];
 exports.bindActionCreators = _bindActionCreators2['default'];
 exports.applyMiddleware = _applyMiddleware2['default'];
 exports.compose = _compose2['default'];
-}).call(this,require('_process'))
-},{"./applyMiddleware":12,"./bindActionCreators":13,"./combineReducers":14,"./compose":15,"./createStore":16,"./utils/warning":18,"_process":11}],18:[function(require,module,exports){
+},{"./applyMiddleware":11,"./bindActionCreators":12,"./combineReducers":13,"./compose":14,"./createStore":15,"./utils/warning":17}],17:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -1065,10 +875,10 @@ function warning(message) {
   } catch (e) {}
   /* eslint-enable no-empty */
 }
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = require('./lib/index');
 
-},{"./lib/index":20}],20:[function(require,module,exports){
+},{"./lib/index":19}],19:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -1100,7 +910,7 @@ if (typeof self !== 'undefined') {
 var result = (0, _ponyfill2['default'])(root);
 exports['default'] = result;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./ponyfill":21}],21:[function(require,module,exports){
+},{"./ponyfill":20}],20:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -1124,7 +934,7 @@ function symbolObservablePonyfill(root) {
 
 	return result;
 };
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var defaults = {
@@ -1140,7 +950,7 @@ var defaults = {
 
 module.exports = defaults;
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 
 // const actions = require('./state/action');
@@ -1185,7 +995,7 @@ exports.mouseEvents = function (actions) {
   };
 };
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 function getBorderRestrict(cropperMode, containerElement) {
@@ -1316,7 +1126,7 @@ exports.normalizeCoordinateDuringMoveImage = normalizeCoordinateDuringMoveImage;
 exports.normalizeCoordinateDuringResize = normalizeCoordinateDuringResize;
 exports.normalizeCoordinateDuringCrop = normalizeCoordinateDuringCrop;
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1358,7 +1168,7 @@ Object.assign(ImageCropper.prototype, _viewRender);
 
 module.exports = ImageCropper;
 
-},{"./events":23,"./render":26,"./state/action":27}],26:[function(require,module,exports){
+},{"./events":22,"./render":25,"./state/action":26}],25:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2007,7 +1817,7 @@ exports.setModeMove = setModeMove;
 exports.showToolbar = showToolbar;
 exports.toggleMode = toggleMode;
 
-},{"./helper":24}],27:[function(require,module,exports){
+},{"./helper":23}],26:[function(require,module,exports){
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -2102,7 +1912,7 @@ var Actions = function () {
 
 module.exports = Actions;
 
-},{"./reducer":28,"redux":17}],28:[function(require,module,exports){
+},{"./reducer":27,"redux":16}],27:[function(require,module,exports){
 'use strict';
 
 var defaultOptions = require('../defaults');
@@ -2359,5 +2169,5 @@ var reducer = function reducer() {
 
 module.exports = reducer;
 
-},{"../defaults":22,"../helper":24}]},{},[25])(25)
+},{"../defaults":21,"../helper":23}]},{},[24])(24)
 });
