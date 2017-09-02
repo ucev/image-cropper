@@ -111,3 +111,6 @@ var image = cropper.getImage()
 
 ## License
 [MIT](https://opensource.org/licenses/MIT) &copy; [ucev](https://github.com/ucev)
+
+## Online DEMO
+[ImageCropper](https://ucev.github.io/image-cropper/)
