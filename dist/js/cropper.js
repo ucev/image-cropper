@@ -1573,7 +1573,7 @@ function showToolbar() {
 
 function hideToolbar() {
   this.toolbarElement.style.display = 'none';
-  this.showToolbarElement.style.display = 'inline-block';
+  this.showToolbarElement.style.display = 'flex';
 }
 
 function initCropper(options) {
