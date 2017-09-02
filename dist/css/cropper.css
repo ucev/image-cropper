@@ -28,6 +28,10 @@
   padding: 0;
 }
 
+.cropper-toolbar-show {
+  width: 40px;
+}
+
 .cropper-toolbar a {
   flex-grow: 0;
   flex-shrink: 0;

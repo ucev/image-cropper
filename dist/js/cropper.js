@@ -1568,7 +1568,7 @@ function getSelectedRect(state) {
 
 function showToolbar() {
   this.showToolbarElement.style.display = 'none';
-  this.toolbarElement.style.display = 'inline-block';
+  this.toolbarElement.style.display = 'flex';
 }
 
 function hideToolbar() {
@@ -1616,7 +1616,7 @@ function initCropper(options) {
         that.rootElement.appendChild(that.toolbarElement);
         // showToolbarElement
         that.showToolbarElement = document.createElement('div');
-        that.showToolbarElement.className = 'cropper-toolbar-show cropper-toolbar';
+        that.showToolbarElement.className = 'cropper-toolbar cropper-toolbar-show';
         var showToolbarIcon = that.createIcon({ name: '显示工具栏', className: 'fa fa-caret-up', action: showToolbar });
         that.showToolbarElement.appendChild(showToolbarIcon);
         that.showToolbarElement.style.display = 'none';
