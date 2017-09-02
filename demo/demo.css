@@ -3,9 +3,9 @@
 #container {
   display: inline-block;
   width: 300px;
-  overflow: hidden;
 }
 
 #preview {
   display: inline-block;
+  vertical-align: top;
 }

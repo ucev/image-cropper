@@ -1172,7 +1172,7 @@ module.exports = ImageCropper;
 'use strict';
 
 /**
- * 
+ *
  * var actions = undefined;
  * var rootElement = undefined,
  *   containerElement = undefined,
@@ -1187,8 +1187,8 @@ module.exports = ImageCropper;
  * var handlerTopLeft, handlerTopCenter, handlerTopRight, handlerRightCenter,
  *   handlerBottomRight, handlerBottomCenter, handlerBottomLeft, handlerLeftCenter;
  *   var coverTopLeft, coverTopCenter, coverTopRight, coverRightCenter,
- *   coverBottomRight, coverBottomCenter, coverBottomLeft, coverLeftCenter, coverCenterCenter; 
- * 
+ *   coverBottomRight, coverBottomCenter, coverBottomLeft, coverLeftCenter, coverCenterCenter;
+ *
  */
 
 var getComputedStyle = require('./helper').getComputedStyle;
@@ -1510,7 +1510,7 @@ function drawPreview(state) {
     this.previewContext.clearRect(0, 0, this.previewCanvasWidth, this.previewCanvasHeight);
     return;
   }
-  // 
+  //
   var dx, dy, dWidth, dHeight;
   // 横向画满
   if (this.previewCanvasWidth / srcWidth * srcHeight <= this.previewCanvasHeight) {
@@ -1592,9 +1592,9 @@ function initCropper(options) {
   parent.removeChild(ele);
   this.containerElement.appendChild(ele);
   this.rootElement.appendChild(this.containerElement);
-  // 
+  //
   parent.appendChild(this.rootElement);
-  // tool bar 
+  // tool bar
   ele.onload = function () {
     // preview or get image canvas
     _this.sourceImage = new Image();
@@ -1607,18 +1607,13 @@ function initCropper(options) {
       if (options.toolbar) {
         that.toolbarElement = document.createElement('div');
         that.toolbarElement.className = 'cropper-toolbar';
-        var iconCnt = 0;
         for (var item in toolbarButtons) {
           if (toolbarButtons[item].state && !options[toolbarButtons[item].state]) {
             continue;
           }
-          iconCnt++;
           that.toolbarElement.appendChild(createIcon.call(that, toolbarButtons[item]));
         }
         that.rootElement.appendChild(that.toolbarElement);
-        // 设置 toolbar 宽度
-        var iconWidth = parseInt(getComputedStyle(that.toolbarElement.firstChild).width);
-        that.toolbarElement.style.width = iconCnt * iconWidth + 'px';
         // showToolbarElement
         that.showToolbarElement = document.createElement('div');
         that.showToolbarElement.className = 'cropper-toolbar-show cropper-toolbar';
